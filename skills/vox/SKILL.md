@@ -27,7 +27,9 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    review-volume; sentiment → X + Reddit + web; precise facts → directed WebFetch; **places /
    ratings × review-volume / hours / transit-logistics → the browser tier (Maps); general-search
    gaps + bot-blocked-but-important reads → the browser tier (Google)**. Mark which sub-questions
-   NEED the browser tier (drives the Browser-tier gate below).
+   NEED the browser tier (drives the Browser-tier gate below). **Video collections / playlists /
+   explicit video-URL lists → the video tier (`vox-video`)**, which ingests each video and surfaces
+   candidate places for the other sources to corroborate (drives the Video-tier gate below).
 3. **Wave 1 — discovery.** Dispatch ONE subagent per source IN PARALLEL via the Agent tool. NOTE:
    `vox-reddit`/`vox-x`/`vox-web`/`vox-browser` are SKILLS, not registered agent types — dispatch
    each as `subagent_type: general-purpose` (or `Explore`) and tell it to invoke its `vox-<source>`
@@ -43,12 +45,21 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    concurrent with the stateless three. Bot-blocked reads discovered by `vox-web` during this wave
    are handled by the SAME single agent in a post-Wave-1 follow-up (see **Browser tier**). Never run
    more than one browser agent.
+   When the INPUT is a TikTok collection / playlist / video-URL list, `vox-video` is the Wave-1
+   **discovery driver**: dispatch exactly ONE `vox-video` agent (it loads `vox-video`/SKILL.md and
+   runs its two-phase ingest→extract; it REQUIRES `mw` + `ffmpeg` + `tiktok-cli`). Treat its surfaced
+   entities as the candidate set the stateless three + browser then corroborate (steps 4–5).
+   `vox-video` uses tiktok-cli's own headless Playwright — a SEPARATE browser from `vox-browser`'s
+   Chrome — so it never contends with the browser tier. Never run more than one `vox-video` agent.
 4. **Corroborate.** Build a candidate × source matrix; promote only candidates in 2+ channels;
    resolve same-name/duplicate collisions early; label each pick with its corroborating sources.
 5. **Wave 2 — verify.** For each finalist, dispatch a narrow stateless verifier to pin facts +
    recent sentiment (two-tier: cheap triage → verified read; disclose which).
 6. **Rank** by the user's priority order; but EXECUTE the most-pruning check first.
 7. **Render** `references/output-template.md` with per-figure confidence + an auditable scoreboard.
+   For video-tier runs, add a **video-provenance** column (video URL + timestamp/frame, creator + COI,
+   engagement) and list ingest failures (empty transcripts, unresolved entities, rate-limited comments)
+   in the "Sources that failed / blocked" line.
    ALWAYS emit the canonical **Sources that failed / blocked** line (write `none — all fetches
    returned cleanly` when nothing failed) so coverage is explicit and machine-checkable.
    **Citation-completeness gate (before emitting):** carry every permalink forward from the subagent
@@ -85,6 +96,20 @@ Availability gate (keyed off the routing-time need, i.e. trigger (a)):
 A late `needs-browser` escalation (trigger b) that can't be served because Chrome is unavailable is
 NOT a hard halt — `vox-web` already disclosed the gap; note it and move on. A `vox-browser` agent
 that returns no usable digest (orphaned/dead) counts as UNavailable for its sub-questions.
+
+## Video tier (collection analyzer; halt-by-default on missing prereqs)
+Triggered when the input is a TikTok collection / playlist / video-URL list (not a plain topic
+query). `vox-video` is the candidate-discovery driver: it ingests each video (download → `mw`
+transcript → `ffmpeg` frames/vision → comments), extracts place claims under the five honesty rules,
+and returns the digest; the stateless sources + browser then corroborate its candidates.
+- **Prereqs REQUIRED** (this tier requires local ASR): `mw`, `ffmpeg`, `tiktok-cli` (+ resolvable
+  ms_token). If any is missing → **HALT-AND-REPORT** the missing tool + its install; do NOT produce a
+  partial answer (there is no `--web-fallback` for video — the videos ARE the source).
+- **Single video agent**: exactly one `vox-video`, ever. It owns tiktok-cli's headless Playwright,
+  independent of `vox-browser`'s real Chrome (no contention).
+- **Heavy / resumable**: ingest is cached; follow-ups re-weight the candidate set without re-downloading.
+- **No phantom quotes**: a video whose transcript came back empty contributes on-screen/caption claims
+  only — never a spoken quote.
 
 ## Hard rules
 Cite every claim with a URL. 2+ sources to promote. Never retry a 403/429 (the web subagent
