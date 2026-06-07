@@ -11,6 +11,7 @@ critical criteria pass). Critical criteria are marked *.
 - TEMPLATE: methodology + ranked table (columns = rubric dimensions) + flags/excluded + one honest pick?
 - CONFIDENCE: per-figure confidence marks used (not one global hedge)?
 - DEGRADATION: blocked/failed sources listed; thin evidence stated rather than papered over?
+- *PROVENANCE: (video-sourced runs only; pass=n/a otherwise) does every spoken-claim quote trace to a video with a real transcript (no phantom quotes), and does every pick cite a video URL (+ timestamp/frame)?
 
 Output example:
 ROUTING: pass

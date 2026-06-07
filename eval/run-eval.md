@@ -42,3 +42,14 @@ manually:
    `eval/judge-rubric.md` + the query + the output; `VERDICT` must be `pass`.
 4. Sanity-check the HALT path: with Chrome NOT connected, the same query must STOP and report (not
    fabricate); re-running with `--web-fallback` must degrade with explicit lower-confidence marks.
+
+## Video-tier rigor (manual, capability-gated)
+The video tier needs local `mw` + `ffmpeg` + `tiktok-cli` + a real ms_token, which the headless rigor
+workflow lacks — so run it by hand, the analogue of the browser-tier rigor:
+1. Ensure prereqs: `mw --help`, `ffmpeg -version`, `tiktok-cli doctor` all green.
+2. Run `eval/goldens/video-collection.md`'s query through `/vox` with a real PUBLIC collection URL,
+   Chrome paired for the Maps corroboration.
+3. Capture to `eval/runs/video-collection.md`; grade with both layers — `structural_checks` must print
+   `[]`, and the judge `VERDICT` must be `pass` (including the new `PROVENANCE` criterion).
+4. Sanity-check the HALT path: with `mw` renamed/unavailable, the run STOPS and names the missing
+   prereq instead of producing a partial answer.
