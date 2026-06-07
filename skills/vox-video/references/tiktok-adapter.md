@@ -6,13 +6,14 @@ while leaving the ingest/extract/return stages unchanged.
 
 ## Enumerate the input → video URL list
 - **Collection URL** (`https://www.tiktok.com/@user/collection/Name-<id>`):
-  `tiktok-cli --json collection videos "<url>"` → NDJSON rows `{id, author, url}`.
+  `tiktok-cli --json collection videos "<url>"` → NDJSON **full video objects** (read `id` +
+  `author.uniqueId`). Runs non-headless (the endpoint bot-blocks headless).
 - **Playlist URL/id**: `tiktok-cli --json playlist videos "<id>"` → NDJSON video rows.
 - **Bare URL list** (paste/file): use as-is; no enumeration call.
 
-**Public vs private:** headless enumeration reads PUBLIC collections. If a collection returns zero
-rows it may be private/own-saved → tell the user to run `tiktok-cli auth --login` once (visible
-browser, log in), then re-run. NEVER treat an empty enumeration as "0 videos" silently — report it.
+**Public only (v1):** `collection videos` reads PUBLIC collections via the signed `item_list` API.
+Private/own-saved collections are NOT supported yet (they need an owner-logged-in session — a separate
+backlog item). NEVER treat an empty enumeration as "0 videos" silently — report it.
 
 ## Per-video data (during ingest)
 - Metadata: `tiktok-cli --json video info "<url>"` → one object (`desc`, author, `createTime`,
