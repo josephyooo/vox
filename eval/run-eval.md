@@ -29,3 +29,16 @@ Prerequisites: skills installed (`./install.sh`); `reddit-cli` and `bird` on PAT
 Caveat: concurrent goldens put 3 simultaneous `reddit-cli` + 3 simultaneous `bird` sessions on one
 auth each, which can trip rate limits (429) and thin results. If a run comes back degraded, switch
 the `parallel(GOLDENS.map(...))` back to a sequential `for` loop in the script.
+
+## Browser-tier rigor (manual, capability-gated)
+
+The browser tier needs a paired Chrome, which the headless rigor workflow can't do — so grade it
+manually:
+1. Install + pair: `./install.sh`, open Chrome, confirm the `claude-in-chrome` MCP can connect.
+2. In an interactive Claude session run `/vox best ramen near Union Square under $20 within a short
+   transit detour` (the `eval/goldens/browser-places.md` query). Capture to
+   `eval/runs/browser-places.md`.
+3. Grade with the SAME layers: `structural_checks` must print `[]`; dispatch the judge with
+   `eval/judge-rubric.md` + the query + the output; `VERDICT` must be `pass`.
+4. Sanity-check the HALT path: with Chrome NOT connected, the same query must STOP and report (not
+   fabricate); re-running with `--web-fallback` must degrade with explicit lower-confidence marks.
