@@ -13,3 +13,9 @@ def _help(binary: str) -> str:
 def test_reddit_cli_has_search_and_comments():
     out = _help("reddit-cli")
     assert "search" in out and "comments" in out
+
+
+@pytest.mark.skipif(shutil.which("bird") is None, reason="bird not installed")
+def test_bird_has_search_subcommand():
+    out = _help("bird")
+    assert "search" in out
