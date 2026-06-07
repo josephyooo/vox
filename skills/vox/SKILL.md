@@ -28,7 +28,11 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    ratings × review-volume / hours / transit-logistics → the browser tier (Maps); general-search
    gaps + bot-blocked-but-important reads → the browser tier (Google)**. Mark which sub-questions
    NEED the browser tier (drives the Browser-tier gate below).
-3. **Wave 1 — discovery.** Dispatch ONE subagent per source IN PARALLEL via the Agent tool. Each
+3. **Wave 1 — discovery.** Dispatch ONE subagent per source IN PARALLEL via the Agent tool. NOTE:
+   `vox-reddit`/`vox-x`/`vox-web`/`vox-browser` are SKILLS, not registered agent types — dispatch
+   each as `subagent_type: general-purpose` (or `Explore`) and tell it to invoke its `vox-<source>`
+   skill as its FIRST action; never pass `subagent_type: vox-reddit/…` (it errors "Agent type not
+   found"). Each
    brief is self-contained: target, fields to extract, the digest contract, "ONLY your source's
    tools", "never fabricate", and an instruction to LOAD ITS PLAYBOOK FIRST (invoke the
    `vox-reddit` / `vox-x` / `vox-web` skill if available, else Read
@@ -47,6 +51,12 @@ fabricate; degrade honestly. All work runs on the user's subscription.
 7. **Render** `references/output-template.md` with per-figure confidence + an auditable scoreboard.
    ALWAYS emit the canonical **Sources that failed / blocked** line (write `none — all fetches
    returned cleanly` when nothing failed) so coverage is explicit and machine-checkable.
+   **Citation-completeness gate (before emitting):** carry every permalink forward from the subagent
+   digests — every quoted string AND every standalone number/proportion/score in the final answer
+   MUST sit next to an inline markdown link. A bare platform name (`(Reddit)`, plain `r/television`)
+   or a floating score is NOT a citation. Self-check: scan the draft for quotation marks and numeric/
+   `%` figures and confirm each is adjacent to a link; if a quote can't be linked, drop the quotation
+   marks and present it as an unattributed paraphrase.
 8. **Follow-ups = live RE-WEIGHTING**, not restart: re-sort the existing candidate set.
 9. **On pushback**, inspect your OWN decomposition for the blind spot, re-measure on any
    user-supplied anchors, and own the miss.
