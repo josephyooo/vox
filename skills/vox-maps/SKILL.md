@@ -21,7 +21,7 @@ Run `maps-cli doctor`.
 
 ## Loop
 Follow [places-playbook](references/places-playbook.md) for the call details and the output contract.
-1. For each finalist `(name, locality)`: `maps-cli --json places "<name>" --near "<locality>"`.
+1. For each finalist `(name, locality)`: `maps-cli --json places "<name>" --near "<locality>" --search "<cuisine/category>"` — pass the query's cuisine/category (e.g. "dumplings", "ramen", "pizza") as `--search` so gosom searches a broad term that returns a LIST while the matcher keys on `<name>`. A bare exact-name query resolves to a single Maps place page (no list → `scrollHeight` → exit-3 anti-bot block). Omit `--search` only when no sensible category exists.
 2. Parse the NDJSON record. Build a digest row: `name · rating × reviewCount · priceBand(~) · address ·
    hours · mapsUrl`. gosom figures are real Maps data → mark `✅ verified`.
 3. `confidence:"low"` or `name:null` → present with `⚠️` and surface `alternatives`; disclose, never

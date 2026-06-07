@@ -4,10 +4,16 @@ Answer place sub-questions by shelling out to `maps-cli` (a local wrapper around
 gosom/google-maps-scraper). No Chrome, no API key. Never average scores; disclose missing data.
 
 ## Call
-- One finalist per call: `maps-cli --json places "<name>" --near "<neighborhood or city>"`.
-- Query LOOSELY — `name + neighborhood`, never a full street address. gosom is a SEARCH tool: an exact
-  address resolves to a single place page with no results list and fails. Pass the locality you already
-  know from the candidate's context, e.g. `--near "Park Slope Brooklyn"`.
+- One finalist per call: `maps-cli --json places "<name>" --near "<neighborhood or city>" --search "<cuisine/category>"`.
+- **Use `--search` for the broad query.** gosom is a SEARCH tool, not a lookup tool: an exact business
+  NAME (like an exact address) resolves to a single Maps *place* page with no results list →
+  `scrollHeight` → exit-3 anti-bot block. So pass a broad cuisine/category term (e.g. "soup dumplings",
+  "ramen", "pizza") as `--search`; gosom searches `"<search> <near>"` (a scrollable list) while the
+  matcher still finds your `<name>` in it with full rating × volume. The category comes from the query
+  family. Omit `--search` only when no sensible category exists (it then falls back to `"<name> <near>"`,
+  which may hit the block).
+- Query the LOCALITY loosely — `name + neighborhood`, never a full street address. Pass the locality from
+  the candidate's context, e.g. `--near "Park Slope Brooklyn"`.
 - `--json` emits ONE NDJSON object on stdout. Parse it; never screenshot.
 
 ## Output contract (per call)

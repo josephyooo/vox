@@ -39,3 +39,9 @@ def test_browser_is_place_data_fallback():
     browser = (SKILLS / "vox-browser" / "SKILL.md").read_text()
     assert "fallback" in browser.lower()
     assert "vox-maps" in browser  # place data is vox-maps-first
+
+
+def test_vox_maps_documents_search_strategy():
+    playbook = (SKILLS / "vox-maps" / "references" / "places-playbook.md").read_text()
+    combined = MAPS + playbook
+    assert "--search" in combined  # the anti-bot broad-query strategy is documented
