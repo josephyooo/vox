@@ -35,6 +35,8 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    recent sentiment (two-tier: cheap triage → verified read; disclose which).
 6. **Rank** by the user's priority order; but EXECUTE the most-pruning check first.
 7. **Render** `references/output-template.md` with per-figure confidence + an auditable scoreboard.
+   ALWAYS emit the canonical **Sources that failed / blocked** line (write `none — all fetches
+   returned cleanly` when nothing failed) so coverage is explicit and machine-checkable.
 8. **Follow-ups = live RE-WEIGHTING**, not restart: re-sort the existing candidate set.
 9. **On pushback**, inspect your OWN decomposition for the blind spot, re-measure on any
    user-supplied anchors, and own the miss.

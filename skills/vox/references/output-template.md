@@ -11,8 +11,12 @@ SHAPE is constant.
 3. **How to read it** — prose grouping picks by which dimension each one wins.
 4. **Flags / excluded** — each exclusion with the EXACT failing value (over budget, over cap,
    closed + date, single-source-only). Never silently dropped.
-5. **My call** — one honest recommendation; conditional framing allowed ("if X then A; if Z then B").
-6. **Next actions** — 2–3 concrete offers.
+5. **Sources that failed / blocked** — ALWAYS present. List every source/URL that 403'd, 429'd,
+   was a JS-shell, was the wrong entity, or returned no signal, each with its reason. If nothing
+   failed, write exactly `none — all fetches returned cleanly`. Never omit this line; an explicit
+   "none" is required so coverage is auditable.
+6. **My call** — one honest recommendation; conditional framing allowed ("if X then A; if Z then B").
+7. **Next actions** — 2–3 concrete offers.
 
 ## On demand: scoreboard
 Per-source tally → deduped distinct total → funnel: surfaced → evaluated → fit → excluded (with
