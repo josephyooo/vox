@@ -18,6 +18,11 @@ estimates.
 - Maps **cannot compute multi-stop transit.** Derive "detour with a stop" as **two sequential transit
   legs (origin→place, place→destination) minus a measured baseline** (origin→destination). Out-and-back
   walking overstates it.
+- **Measure every promoted finalist, don't estimate.** Run an actual Maps directions read (walk and/or
+  transit) for EACH finalist you put in the table — not just the top pick — so every in-table
+  proximity/detour figure is Maps-verified (✅). Fall back to an address-derived distance (marked `~`)
+  ONLY when a directions read genuinely fails; never leave a finalist on a guess when a measurement was
+  one navigation away.
 - Menu photo is a low-res thumbnail → **abandon OCR; report the live menu URL** so the orchestrator
   can hand it to a `vox-web` fetch.
 
