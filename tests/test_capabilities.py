@@ -40,3 +40,9 @@ def test_claude_in_chrome_capability_probe_documented():
     if "chrome" not in listing:
         pytest.skip("claude-in-chrome MCP not configured in this environment")
     assert "chrome" in listing
+
+
+@pytest.mark.skipif(shutil.which("maps-cli") is None, reason="maps-cli not installed")
+def test_maps_cli_has_places_and_doctor():
+    out = _help("maps-cli")
+    assert "places" in out and "doctor" in out
