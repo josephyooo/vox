@@ -15,19 +15,21 @@ fabricate; degrade honestly. All work runs on the user's subscription.
 
 ## Loop
 0. **Capability-probe** sources you'll use (`reddit-cli --help`, `bird check`,
-   `ToolSearch(select:WebSearch,WebFetch)`; for the browser tier
-   `ToolSearch(select:mcp__claude-in-chrome__…)` + `list_connected_browsers`). If an HTTP source is
-   missing, DECLARE which sub-questions lose coverage and proceed with a confidence penalty — never
-   fake a missing source. The browser tier has a stricter rule: see the **Browser tier** section below.
+   `ToolSearch(select:WebSearch,WebFetch)`; for the places tier `maps-cli doctor`; for the browser
+   tier `ToolSearch(select:mcp__claude-in-chrome__…)` + `list_connected_browsers`). If an HTTP source
+   is missing, DECLARE which sub-questions lose coverage and proceed with a confidence penalty — never
+   fake a missing source. The places/browser tier has a stricter rule: see the **Places & browser
+   tier** section below.
 1. **Parse** the query into an ordered criteria set (hard / soft / unknown).
    1.5 **Propose the rubric & confirm** (dimensions + source plan + "good" bar) per
    `references/rubric-templates.md`, UNLESS the query already states criteria (then echo + proceed;
    skip the confirm if the user said "just run it").
 2. **Route** each sub-question to its purpose-fit source: objective goodness → web critics +
-   review-volume; sentiment → X + Reddit + web; precise facts → directed WebFetch; **places /
-   ratings × review-volume / hours / transit-logistics → the browser tier (Maps); general-search
-   gaps + bot-blocked-but-important reads → the browser tier (Google)**. Mark which sub-questions
-   NEED the browser tier (drives the Browser-tier gate below). **Video collections / playlists /
+   review-volume; sentiment → X + Reddit + web; precise facts → directed WebFetch; **place data
+   (rating × review-volume / hours / address) → the places tier (`vox-maps`, primary, parallel);
+   logistics / transit detours / "detour with a stop" → the browser tier (`vox-browser`, Maps
+   directions); general-search gaps + bot-blocked-but-important reads → the browser tier (Google)**.
+   Mark which sub-questions NEED the places tier or browser tier (drives the Places-tier gate below). **Video collections / playlists /
    explicit video-URL lists → the video tier (`vox-video`)**, which ingests each video and surfaces
    candidate places for the other sources to corroborate (drives the Video-tier gate below).
 3. **Wave 1 — discovery.** Dispatch ONE subagent per source IN PARALLEL via the Agent tool. NOTE:
@@ -43,8 +45,14 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    NEEDED and the browser tier is available, ALSO dispatch exactly ONE `vox-browser` agent in this
    wave (it loads `vox-browser`/SKILL.md, owns Chrome, works its queued sub-questions SERIALLY),
    concurrent with the stateless three. Bot-blocked reads discovered by `vox-web` during this wave
-   are handled by the SAME single agent in a post-Wave-1 follow-up (see **Browser tier**). Never run
+   are handled by the SAME single agent in a post-Wave-1 follow-up (see **Places & browser tier**). Never run
    more than one browser agent.
+   When PLACE-DATA sub-questions are NEEDED and the places tier is available (`maps-cli doctor` ok),
+   dispatch `vox-maps` in Wave 1 as a STATELESS source (like the HTTP three — it owns no shared
+   resource, so it runs in parallel and may process multiple finalists concurrently); it loads
+   `vox-maps`/SKILL.md and calls `maps-cli places`. Dispatch it as `subagent_type: general-purpose`
+   (it is a SKILL, not an agent type). Any place sub-question it returns `no-capability` or blocked
+   (exit 3) for → escalate THAT sub-question to the single `vox-browser` agent.
    When the INPUT is a TikTok collection / playlist / video-URL list, `vox-video` is the Wave-1
    **discovery driver**: dispatch exactly ONE `vox-video` agent (it loads `vox-video`/SKILL.md and
    runs its two-phase ingest→extract; it REQUIRES `mw` + `ffmpeg` + `tiktok-cli`). Treat its surfaced
@@ -72,30 +80,40 @@ fabricate; degrade honestly. All work runs on the user's subscription.
 9. **On pushback**, inspect your OWN decomposition for the blind spot, re-measure on any
    user-supplied anchors, and own the miss.
 
-## Browser tier (single serial owner; halt-by-default)
-The browser is a SINGLE shared resource — exactly one `vox-browser` agent, ever; never parallel,
-never a second concurrent one. There are TWO triggers for browser work:
-- **(a) Places/logistics** — known at routing (step 2). Dispatch the one browser agent in Wave 1,
-  concurrent with the stateless three.
+## Places & browser tier (places-first via gosom; browser = logistics + fallback; halt-by-default)
+Place DATA (rating × review-volume / hours / address) is served by the **places tier**, available if
+**`vox-maps` (gosom — `maps-cli doctor` exits 0) OR Chrome** is available. The browser is still a
+SINGLE shared resource — exactly one `vox-browser` agent, ever; never parallel — and it now owns
+**logistics/transit** and serves as the **place-data fallback**. There are THREE triggers for browser
+work:
+- **(a-data) Place data `vox-maps` could not serve** — a finalist it returned `no-capability` or
+  blocked (exit 3) for. Escalate that sub-question to the one `vox-browser` agent.
+- **(a-logistics) Logistics / transit detours** — known at routing (step 2); gosom has no directions,
+  so these always go to `vox-browser`. Dispatch the one browser agent in Wave 1 when logistics is
+  needed.
 - **(b) Bot-blocked-but-important reads** — discovered DURING Wave 1 by `vox-web`, which tags such
-  URLs `needs-browser` in its digest's "sources that failed" block. After Wave 1, collect those tags
-  and have the SAME single browser agent read them in a brief follow-up pass.
+  URLs `needs-browser` in its digest's "sources that failed" block. After Wave 1, the SAME single
+  browser agent reads them in a brief follow-up pass.
 
-Availability gate (keyed off the routing-time need, i.e. trigger (a)):
-- **Needed + available** → dispatch the one browser agent (Wave 1 for places; follow-up for queued
-  `needs-browser` URLs).
-- **Not needed** → ignore the browser entirely; run the HTTP tier as normal (no halt regardless of
-  Chrome).
-- **Needed + UNavailable (Chrome can't connect), default** → **HALT-AND-REPORT.** Do NOT silently
-  produce a web-only answer. State which sub-questions/criteria depend on the browser, that Chrome
-  isn't connected, and the two ways forward: (a) pair Chrome and re-ask, or (b) re-run with
-  `--web-fallback`.
-- **Needed + UNavailable + `--web-fallback`** (literal flag OR natural language like "proceed
-  web-only if Chrome's down") → fall the browser sub-questions back to `vox-web`; mark every figure
-  that lost browser corroboration with a LOWER-confidence mark + a one-line "no browser coverage" note.
+Availability gate (keyed off the routing-time PLACE / LOGISTICS need):
+- **Place data needed + `vox-maps` available (`maps-cli doctor` ok)** → dispatch `vox-maps` in Wave 1
+  (stateless, parallel). Escalate ONLY the finalists it returns `no-capability`/blocked for to the one
+  `vox-browser` agent (when Chrome is up).
+- **Place data needed + `vox-maps` UNavailable (exit 4) + Chrome available** → `vox-browser` serves the
+  place data (its Maps playbook), as the fallback.
+- **Logistics needed** → always `vox-browser` (one agent, Wave 1), independent of gosom.
+- **Not needed** → ignore both tiers; run the HTTP tier as normal.
+- **Place / logistics needed + BOTH gosom and Chrome UNavailable, default** → **HALT-AND-REPORT.** Do
+  NOT silently produce a web-only answer. State which sub-questions depend on the places/browser tier,
+  that neither gosom nor Chrome is available, and the two ways forward: (a) pair Chrome / install gosom
+  and re-ask, or (b) re-run with `--web-fallback`.
+- **… + `--web-fallback`** (literal flag OR natural language like "proceed web-only if neither's up")
+  → fall those sub-questions back to `vox-web`; mark every figure that lost places/browser
+  corroboration with a LOWER-confidence mark + a one-line "no places/browser coverage" note.
 A late `needs-browser` escalation (trigger b) that can't be served because Chrome is unavailable is
-NOT a hard halt — `vox-web` already disclosed the gap; note it and move on. A `vox-browser` agent
-that returns no usable digest (orphaned/dead) counts as UNavailable for its sub-questions.
+NOT a hard halt — `vox-web` already disclosed the gap; note it and move on. A `vox-maps` or
+`vox-browser` agent that returns no usable digest (orphaned/dead) counts as UNavailable for its
+sub-questions.
 
 ## Video tier (collection analyzer; halt-by-default on missing prereqs)
 Triggered when the input is a TikTok collection / playlist / video-URL list (not a plain topic
