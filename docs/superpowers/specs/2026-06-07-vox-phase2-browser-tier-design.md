@@ -35,7 +35,7 @@ Phase 2 adds exactly these, as one coherent tier.
 - Orchestrator integration that respects the **single-shared-browser** constraint: the browser tier
   runs as **one serial subagent**, concurrent with the parallel HTTP agents.
 - Make the real browser the **top rung of the anti-bot ladder**, reached via the orchestrator.
-- **Halt-by-default** when a needed browser tier is unavailable; opt-in `--degrade` to proceed
+- **Halt-by-default** when a needed browser tier is unavailable; opt-in `--web-fallback` to proceed
   web-only with a confidence penalty.
 - Capability-gated rigor: a smoke test + one **manually-run** browser golden graded by the existing
   harness + judge.
@@ -54,7 +54,7 @@ Phase 2 adds exactly these, as one coherent tier.
 | D1 | Scope | **One spec, both playbooks** (maps + google); build maps-first | They share one browser-control machinery; designing it twice is waste. Maps has the densest mined evidence. |
 | D2 | Browser owner | **One serial `vox-browser` subagent** (not orchestrator-driven) | Keeps the orchestrator uniform ("a subagent per source", just serialized) and isolates browser complexity behind the digest contract. (Diverges from the recipe's orchestrator-driven pattern — a deliberate, user-chosen trade.) |
 | D3 | Browser mechanism | **`claude-in-chrome` MCP** (deferred tools) driving the user's real Chrome | The only browser path present (no Playwright/Chromium). Subscription-native, no API. Same surface the mined sessions used. |
-| D4 | Unavailable-browser behavior | **Halt-and-report by default**; opt-in `--degrade` flag | The user wants a trustworthy answer over a silently-degraded one. Degrade stays available for convenience. |
+| D4 | Unavailable-browser behavior | **Halt-and-report by default**; opt-in `--web-fallback` flag | The user wants a trustworthy answer over a silently-degraded one. Degrade stays available for convenience. |
 | D5 | Degrade trigger scope | Halt only when a **browser-routed sub-question exists** | A pure-sentiment query that never needed the browser must run normally regardless of Chrome. |
 | D6 | Eval | **Capability smoke** + one **manual capability-gated browser golden**; automated workflow stays text-tier | The headless rigor workflow can't pair Chrome; forcing browser eval into automation would only ever test the degraded path. |
 | D7 | Digest/output | **Reuse v1 contracts unchanged** | The browser-agent returns the same digest; the deliverable template is unchanged. |
@@ -133,7 +133,7 @@ The serial browser-agent's playbook. Sections:
   alongside the stateless three. Pass it the queued browser sub-questions (and any blocked URLs from
   a prior `vox-web` pass, if available).
 - **Unavailable-browser gate** (new; see §7): if a browser sub-question is needed and the probe says
-  Chrome can't connect → **halt-and-report** unless `--degrade` is set.
+  Chrome can't connect → **halt-and-report** unless `--web-fallback` is set.
 
 ### 5.5 Anti-bot top rung — `skills/vox-web/references/antibot-ladder.md` (edit)
 Add a final rung after the Jina rung: *"If still blocked AND the page is important, do not fabricate
@@ -165,12 +165,12 @@ These live in `vox-browser/SKILL.md` and are used by both playbooks:
 3. **Browser NOT available + needed, default mode** → **HALT-AND-REPORT.** The orchestrator stops
    before dispatching browser work and tells the user: which sub-questions/criteria depend on the
    browser, that Chrome isn't connected, and the two ways forward — **(a) pair Chrome and retry**, or
-   **(b) re-run with `--degrade`**. It does NOT silently produce a web-only answer.
-4. **Browser NOT available + needed, `--degrade` set** → proceed **web-only**: the browser-routed
+   **(b) re-run with `--web-fallback`**. It does NOT silently produce a web-only answer.
+4. **Browser NOT available + needed, `--web-fallback` set** → proceed **web-only**: the browser-routed
    sub-questions fall back to `vox-web`, and every figure that would have had browser corroboration
    carries an explicit **lower-confidence mark** plus a one-line note naming the missing coverage.
 
-`--degrade` is recognised as a literal flag in the query **and** via natural language (e.g. "proceed
+`--web-fallback` is recognised as a literal flag in the query **and** via natural language (e.g. "proceed
 web-only if Chrome's down"). The flag only matters in outcome 3/4; it is a no-op otherwise.
 
 **Headless contexts** (e.g. the automated rigor workflow) hit outcome 2 for the text goldens (no
@@ -200,7 +200,7 @@ The browser-agent returns the **v1 digest contract** unchanged, with:
 - maps figures carrying the **band-vs-verified** distinction explicitly;
 - a `Status:` of `ok` | `no-signal` | `no-capability` | `halt-required`.
 
-The orchestrator renders the **v1 output template** unchanged. Under `--degrade`, missing-browser
+The orchestrator renders the **v1 output template** unchanged. Under `--web-fallback`, missing-browser
 coverage shows as per-figure lower-confidence marks in the ranked table and a line in the canonical
 "Sources that failed / blocked" disclosure.
 
