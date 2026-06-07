@@ -33,3 +33,9 @@ def test_orchestrator_gate_is_gosom_or_chrome():
 def test_logistics_stays_on_browser():
     assert "logistics" in ORCH.lower()
     assert "vox-browser" in ORCH
+
+
+def test_browser_is_place_data_fallback():
+    browser = (SKILLS / "vox-browser" / "SKILL.md").read_text()
+    assert "fallback" in browser.lower()
+    assert "vox-maps" in browser  # place data is vox-maps-first

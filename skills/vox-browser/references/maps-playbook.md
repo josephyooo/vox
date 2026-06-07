@@ -1,5 +1,9 @@
 # Maps playbook (Google Maps via Chrome)
 
+> **Place data is `vox-maps`-first.** The rating × review-VOLUME / hours / address backbone is normally
+> served by the `vox-maps` skill (native gosom, no Chrome). This playbook now serves **logistics/transit
+> directions** and the **place-data FALLBACK** when `vox-maps` flags a finalist blocked/no-capability.
+
 Answer places/logistics by driving Maps with direct-URL navigation. Never average scores; disclose
 estimates.
 
