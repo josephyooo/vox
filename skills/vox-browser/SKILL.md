@@ -31,8 +31,9 @@ fabricate. You are SERIAL: one navigation at a time, one sub-question at a time.
 
 ## Serial work loop
 Process queued sub-questions in order. For places/logistics, follow
-[maps-playbook](references/maps-playbook.md). Finish one sub-question's navigation before starting
-the next — never leave the browser mid-navigation.
+[maps-playbook](references/maps-playbook.md); for Google search and bot-blocked reads, follow
+[google-playbook](references/google-playbook.md). Finish one sub-question's navigation before
+starting the next — never leave the browser mid-navigation.
 
 ## Return
 The digest contract, led by the `paired:` (or `no-capability`) line. Maps figures MUST mark

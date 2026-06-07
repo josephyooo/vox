@@ -15,4 +15,8 @@ Pivot order when blocked:
    past most 403/JS-shells. CAVEATS to state to the user: routes through a THIRD PARTY (Jina sees
    the fetch); free-tier reliability varies; foreign-IP-blocked sites may still fail. Use for
    public content only; do not use to defeat auth/paywalls.
-5. If all fail: report the gap in the digest's "sources that failed" block. Never fabricate.
+5. **Browser rung (escalate, don't drive):** you are a STATELESS agent — you cannot drive the shared
+   browser. If the page is important, record its URL in the digest's "sources that failed" block
+   tagged `needs-browser`. The orchestrator queues it for the single `vox-browser` agent (a real
+   Chrome session loads most blocked pages).
+6. If even the browser can't get it: report the gap in "sources that failed". Never fabricate.
