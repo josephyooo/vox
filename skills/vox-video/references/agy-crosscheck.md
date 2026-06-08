@@ -37,8 +37,9 @@ Write the result to `<workdir>/<id>/agy.md`.
    media (a 70s-video / 15s-audio desync hung ~42 min). Bound every call and kill on overrun. (Real
    videos returned well under 150s.)
 2. **Success judged by OUTPUT, not exit code.** agy returned exit 0 with `Error: timed out waiting for
-   response` as its body. A run is a FAILURE if its output is empty, is missing the `##` section
-   markers, or contains `Error: timed out`.
+   response` as its body. A run is a FAILURE if its output is empty, is **missing ANY of the three `##`
+   section markers** (`## spoken` AND `## on-screen` AND `## entities` must ALL be present — a truncated
+   response with only `## spoken` is a FAILURE, not `ok`), or contains `Error: timed out`.
 3. **Retry once on flake.** ~1/3 of clean-input runs flaked (timeout error). On a failed output-check,
    retry exactly once, then give up.
 

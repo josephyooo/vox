@@ -42,6 +42,14 @@ def test_three_robustness_guards_documented():
     assert "retry" in TEXT
 
 
+def test_completeness_guard_requires_all_three_markers():
+    # Live-rigor finding: a truncated response with only `## spoken` must FAIL, not pass as ok.
+    # The completeness guard must require ALL three section markers.
+    ref = (VIDEO / "references" / "agy-crosscheck.md").read_text().lower()
+    assert "any of the three" in ref
+    assert "## spoken" in ref and "## on-screen" in ref and "## entities" in ref
+
+
 def test_skill_entrypoint_and_playbooks_wire_agy():
     skill = (VIDEO / "SKILL.md").read_text().lower()
     ingest = (VIDEO / "references" / "ingest-playbook.md").read_text().lower()
