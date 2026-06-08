@@ -50,3 +50,15 @@ def test_rubric_families_name_skeletons():
     assert "skeleton a" in RUBRIC
     assert "skeleton b" in RUBRIC
     assert "record the chosen skeleton" in RUBRIC
+
+
+def test_step15_records_skeleton():
+    assert "record the output skeleton" in SKILL
+
+
+def test_step5_conflict_trigger_and_no_finalist_branch():
+    assert "conflict trigger" in SKILL
+    assert "no-finalist branch" in SKILL
+    assert "does not clear" in SKILL          # 2+ promotes but does NOT clear a conflict
+    assert "sources disagree" in SKILL        # the disclose-don't-pick render
+    assert "intentionally skipped" in SKILL   # the no-finalist Wave-2 decision is stated

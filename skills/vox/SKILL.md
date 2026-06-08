@@ -23,7 +23,9 @@ fabricate; degrade honestly. All work runs on the user's subscription.
 1. **Parse** the query into an ordered criteria set (hard / soft / unknown).
    1.5 **Propose the rubric & confirm** (dimensions + source plan + "good" bar) per
    `references/rubric-templates.md`, UNLESS the query already states criteria (then echo + proceed;
-   skip the confirm if the user said "just run it").
+   skip the confirm if the user said "just run it"). **Record the output skeleton** (A = rankable
+   finalists; B = no rankable finalist) as part of the confirmed rubric, by the rule rankable→A /
+   else→B; carry it to render (step 7).
 2. **Route** each sub-question to its purpose-fit source: objective goodness → web critics +
    review-volume; sentiment → X + Reddit + web; precise facts → directed WebFetch; **place data
    (rating × review-volume / hours / address) → the places tier (`vox-maps`, primary, parallel);
@@ -61,8 +63,23 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    Chrome — so it never contends with the browser tier. Never run more than one `vox-video` agent.
 4. **Corroborate.** Build a candidate × source matrix; promote only candidates in 2+ channels;
    resolve same-name/duplicate collisions early; label each pick with its corroborating sources.
-5. **Wave 2 — verify.** For each finalist, dispatch a narrow stateless verifier to pin facts +
-   recent sentiment (two-tier: cheap triage → verified read; disclose which).
+5. **Wave 2 — verify (finalist OR contested claim).**
+   - **Per-finalist (Skeleton A):** for each finalist, dispatch a narrow stateless verifier to pin
+     facts + recent sentiment (two-tier: cheap triage → verified read; disclose which).
+   - **Conflict trigger (BOTH skeletons, MANDATORY):** if any digest's "Conflicts / disagreements"
+     slot is non-empty, or a high-stakes claim (event date, toll, who/what/where) is contested or
+     self-flagged a likely extraction error, you MUST resolve it before render — EVEN IF the headline
+     facts already corroborate 2+ channels. The 2+-channel rule PROMOTES a candidate; it does NOT clear
+     a conflicting figure. Resolve cheaply: ONE narrow re-fetch of just that fact (your own
+     WebFetch/WebSearch; escalate to a directed `vox-web` verifier only if the re-fetch is itself
+     blocked — never retry a 403/429).
+   - **No-finalist branch (Skeleton B):** there is no per-finalist wave — instead run a lightweight
+     corroboration pass: every load-bearing claim/number is in 2+ channels OR carries a single-source
+     hedge, and each contested fact gets the one narrow re-fetch above. State in your reasoning that
+     the per-finalist wave was intentionally skipped and why.
+   - **Unresolved → disclose, don't pick:** if the re-fetch can't resolve it, render BOTH values with
+     `⚠️ (sources disagree: X vs Y — unverified)`. Never silently choose one; the phrase "corroborated
+     on every key fact" is FORBIDDEN while any conflict is open.
 6. **Rank** by the user's priority order; but EXECUTE the most-pruning check first.
 7. **Render** `references/output-template.md` with per-figure confidence + an auditable scoreboard.
    For video-tier runs, add a **video-provenance** column (video URL + timestamp/frame, creator + COI,
