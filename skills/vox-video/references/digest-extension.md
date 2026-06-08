@@ -16,7 +16,13 @@ honest. The orchestrator ingests the SAME 7 sections; video just makes them rich
 - **Estimates labeled** — caption/on-screen-derived figures are `~` until verified; band-vs-verified
   prices follow the same rule the maps playbook uses.
 - **Sources that failed** — list ingest failures explicitly: empty-transcript videos (by id),
-  unresolved/garbled entities, rate-limited comments (`none_fetched` ≠ neutral), un-enumerated items.
+  unresolved/garbled entities, rate-limited comments (`none_fetched` ≠ neutral), un-enumerated items,
+  and per-video `agy: unavailable` (the entity cross-check didn't run — a possibly-garbled name isn't
+  silently trusted) plus global `agy: disabled` when agy is absent.
+- **agy entity cross-check (supplementary)** — reconcile entity NAMES against `agy.md` per rules
+  R-A1..R-A5 in [agy-crosscheck](agy-crosscheck.md): a corrected name carries a transparent
+  "via agy cross-check" note; an agy-only on-screen entity carries a lower-confidence "no frame anchor"
+  label; `agy` NEVER becomes the source of a spoken quote (Rule 2 below still binds).
 
 ## The five honesty rules (each fixes a documented failure of the inspiration run)
 1. **Signal-priority confidence** — transcript (spoken) > on-screen > caption; comments are a separate

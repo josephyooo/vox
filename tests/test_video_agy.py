@@ -40,3 +40,14 @@ def test_three_robustness_guards_documented():
     assert "timeout" in TEXT
     assert "exit code" in TEXT
     assert "retry" in TEXT
+
+
+def test_skill_entrypoint_and_playbooks_wire_agy():
+    skill = (VIDEO / "SKILL.md").read_text().lower()
+    ingest = (VIDEO / "references" / "ingest-playbook.md").read_text().lower()
+    # the skill entrypoint points at the cross-check and its reference
+    assert "agy" in skill
+    assert "agy-crosscheck" in skill
+    # the ingest playbook documents the per-video agy stage + status field
+    assert "agy" in ingest
+    assert "agy.md" in ingest

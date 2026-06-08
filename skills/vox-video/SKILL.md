@@ -20,18 +20,27 @@ This tier REQUIRES local ASR — there is no caption-only fallback. Probe:
 If `mw`, `ffmpeg`, or `tiktok-cli` is missing → **HALT**: return Status `no-capability` naming the
 missing tool + its one-line install, and do NOT degrade to a partial answer.
 
+**Soft probe (supplementary, non-halting):** `agy --help` — enables the supplementary entity
+cross-check ([agy-crosscheck](references/agy-crosscheck.md)). If `agy` is absent, the cross-check is
+DISABLED and recorded as a coverage note; the pipeline PROCEEDS — this is **never a halt**, unlike the
+hard prereqs above.
+
 ## Phase 1 — Ingest (per video, cached/resumable)
 Follow [ingest-playbook](references/ingest-playbook.md): enumerate the input via
 [tiktok-adapter](references/tiktok-adapter.md), then for each video
-download → `mw` transcript → `ffmpeg` frames → vision on-screen text → comments, writing a cached
+download → `mw` transcript → `ffmpeg` frames → vision on-screen text → `agy` entity cross-check
+(video-only, supplementary; see [agy-crosscheck](references/agy-crosscheck.md)) → comments, writing a cached
 workdir with a per-stage `status.json`. Skip already-complete items on re-run.
 
 ## Phase 2 — Extract → claims
 Per video, build claim atoms in signal-priority order **transcript → on-screen/visual → caption/desc**,
 with **comments as a separate crowd channel**. Apply the five honesty rules in
 [digest-extension](references/digest-extension.md) — above all: **no spoken-claim quote unless that
-video's transcript status is `ok`**. Dedupe mentions to canonical entities; count cross-video
-corroboration (`mention_count` / distinct creators).
+video's transcript status is `ok`**. Then **reconcile entities against the `agy` cross-check** (rules
+R-A1..R-A5 in [agy-crosscheck](references/agy-crosscheck.md)): prefer the better-sourced spelling and add
+agy-only on-screen entities at lower confidence — but `agy` **never** creates a spoken quote (Rule 2
+still binds). Dedupe mentions to canonical entities; count cross-video corroboration (`mention_count` /
+distinct creators).
 
 ## Sources & blocks
 TikTok access is ONLY via [tiktok-adapter](references/tiktok-adapter.md) (`tiktok-cli`). Record every
