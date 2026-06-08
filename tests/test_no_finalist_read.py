@@ -44,3 +44,9 @@ def test_legend_carry_forward_rules():
 def test_digest_has_conflicts_slot():
     assert "conflicts / disagreements across fetches" in DIGEST
     assert "likely extraction error" in DIGEST
+
+
+def test_rubric_families_name_skeletons():
+    assert "skeleton a" in RUBRIC
+    assert "skeleton b" in RUBRIC
+    assert "record the chosen skeleton" in RUBRIC
