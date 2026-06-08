@@ -70,3 +70,17 @@ def test_step7_four_honesty_rules():
     assert "quote provenance" in SKILL
     assert "paraphrase via" in SKILL
     assert "links all n" in SKILL  # "Corroboration count links all N"
+
+
+def test_sentiment_golden_updated_to_skeleton_b():
+    low = (GOLDENS / "claude-model-sentiment.md").read_text().lower()
+    assert "skeleton b" in low
+
+
+def test_conflict_golden_exists_and_exercises_disclosure():
+    g = GOLDENS / "event-conflict-sentiment.md"
+    assert g.exists()
+    low = g.read_text().lower()
+    assert "skeleton b" in low
+    assert "conflicts / disagreements" in low
+    assert "sources disagree" in low
