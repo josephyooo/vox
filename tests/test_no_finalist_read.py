@@ -39,3 +39,8 @@ def test_warn_mark_covers_conflicting_unverified():
 def test_legend_carry_forward_rules():
     assert "no silent confidence upgrade" in OUT
     assert "per-claim sources" in OUT
+
+
+def test_digest_has_conflicts_slot():
+    assert "conflicts / disagreements across fetches" in DIGEST
+    assert "likely extraction error" in DIGEST
