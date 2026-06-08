@@ -62,3 +62,11 @@ def test_step5_conflict_trigger_and_no_finalist_branch():
     assert "does not clear" in SKILL          # 2+ promotes but does NOT clear a conflict
     assert "sources disagree" in SKILL        # the disclose-don't-pick render
     assert "intentionally skipped" in SKILL   # the no-finalist Wave-2 decision is stated
+
+
+def test_step7_four_honesty_rules():
+    assert "no silent confidence upgrade" in SKILL
+    assert "per-claim sources" in SKILL
+    assert "quote provenance" in SKILL
+    assert "paraphrase via" in SKILL
+    assert "links all n" in SKILL  # "Corroboration count links all N"

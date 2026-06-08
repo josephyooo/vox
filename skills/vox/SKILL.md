@@ -93,6 +93,21 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    or a floating score is NOT a citation. Self-check: scan the draft for quotation marks and numeric/
    `%` figures and confirm each is adjacent to a link; if a quote can't be linked, drop the quotation
    marks and present it as an unattributed paraphrase.
+   **Honesty gate (before emitting — provenance, not just adjacency; run as self-checks, no new
+   agents):**
+   1. **No silent confidence upgrade** — a fact any contributing digest marked `⚠️` / `SINGLE-SOURCE`
+      / conflicting MUST keep at least that caution; you may LOWER confidence with justification but
+      NEVER raise it above what the digest reported.
+   2. **Per-claim sources** — tag each promoted fact with its real corroborating sources / channel
+      count (`web-only`, `web+Reddit`); a blanket "all 2+ corroborated" is forbidden when any claim is
+      1-channel.
+   3. **Quote provenance** — a quote attributed to a NAMED person/outlet must link the page where it
+      was actually READ. If recovered via an aggregator that re-quotes, strip the quotation marks and
+      tag `[paraphrase via <aggregator>]`, or drop it — never render an aggregator re-quote as a
+      verbatim attribution to the original.
+   4. **Corroboration count links all N** — any count/strength claim ("N outlets", "genuine
+      consensus") must inline-link EVERY counted source, or downgrade to a non-numeric hedge
+      ("multiple critics"); a snippet-only / 403'd source may NOT be tallied into N.
 8. **Follow-ups = live RE-WEIGHTING**, not restart: re-sort the existing candidate set.
 9. **On pushback**, inspect your OWN decomposition for the blind spot, re-measure on any
    user-supplied anchors, and own the miss.
