@@ -1,0 +1,11 @@
+# requirements-lock.txt — known-good dependency snapshot for vox
+# Captured 2026-06-14 on Python 3.14.5 (the venv that passes the quality gate).
+# Full environment (runtime + dev tooling), editable self-install excluded.
+# Reproduce exactly:  pip install -r requirements-lock.txt && pip install -e . --no-deps
+# Convenience path:   pip install -e ".[dev]"   (resolves latest; this file is the pinned known-good set)
+iniconfig==2.3.0
+packaging==26.2
+pluggy==1.6.0
+Pygments==2.20.0
+pytest==9.0.3
+ruff==0.15.16
