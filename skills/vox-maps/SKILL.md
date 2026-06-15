@@ -25,7 +25,11 @@ Follow [places-playbook](references/places-playbook.md) for the call details and
 2. Parse the NDJSON record. Build a digest row: `name · rating × reviewCount · priceBand(~) · address ·
    hours · mapsUrl`. gosom figures are real Maps data → mark `✅ verified`.
 3. `confidence:"low"` or `name:null` → present with `⚠️` and surface `alternatives`; disclose, never
-   assert. `reviewCount` of 0/null → flag volume-UNAVAILABLE (`⚠️`), NOT "0 reviews".
+   assert.
+   `maps-cli` now returns `reviewCountStatus` and auto-re-fetches once when the list-card volume
+   is missing. Read it: `reviewCountStatus: "unavailable"` → render `⚠ volume-UNAVAILABLE`
+   (never "0 reviews"); `"ok"` → use the `reviewCount`. A finalist whose volume is unavailable
+   ranks on rating only — say so in the digest.
 4. A finalist that exits `3` (blocked) is a per-ITEM gap — report it so the orchestrator escalates THAT
    place to `vox-browser`; the rest of the digest stays valid.
 

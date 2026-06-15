@@ -24,6 +24,10 @@ handle the finalists it flags blocked/no-capability, plus all logistics.)
 `list_connected_browsers` → `AskUserQuestion` (which browser) → `select_browser(deviceId)` →
 `tabs_context_mcp(createIfEmpty:true)`. Lead your digest with `paired: <browser>, N tabs`.
 
+Browser steps legitimately pause between actions (navigations, page loads, think-time between
+clicks) — a 30–60s quiet gap is NOT a hang. Emit a short progress line between major steps where
+the harness allows, so a backgrounded run reads as alive.
+
 ## Browser-control mechanics (use for every sub-question)
 - **Navigate by direct URL**, never UI typing. Build the URL, navigate, read.
 - **`get_page_text` over screenshots** for lists — parses text/rating/price cleanly, no OCR.
@@ -37,6 +41,14 @@ Process queued sub-questions in order. For places/logistics, follow
 [maps-playbook](references/maps-playbook.md); for Google search and bot-blocked reads, follow
 [google-playbook](references/google-playbook.md). Finish one sub-question's navigation before
 starting the next — never leave the browser mid-navigation.
+
+## Brand-engine availability check (lodging)
+Given a finalist name + dates, navigate the **brand booking engine** (the property's own site,
+or the platform that takes the booking — NOT an aggregator tab), read the live nightly rate +
+availability, and return `{available: bool, rate, url}`. Handle the sold-out / "no rooms" state
+explicitly (`available: false`) — never infer availability from a Google Hotels / Booking
+aggregator price. If the brand engine can't be reached, return `available: null` with the reason
+so the orchestrator degrades to the aggregator-only `⚠` tag rather than asserting bookability.
 
 ## Return
 The digest contract, led by the `paired:` (or `no-capability`) line. Maps figures MUST mark

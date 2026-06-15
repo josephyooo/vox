@@ -127,6 +127,34 @@ work:
   URLs `needs-browser` in its digest's "sources that failed" block. After Wave 1, the SAME single
   browser agent reads them in a brief follow-up pass.
 
+- **Carry resolved review-volume forward.** Once a finalist's review volume is resolved in a
+  run, reuse that reconciled number across session resumes / follow-ups — never let a finalist's
+  volume silently change between turns (gosom can return a different list-card count on a later
+  fetch; the first resolved value wins unless a verification step deliberately re-checks it).
+- **Narrate the background browser; never self-stop on an inferred stall.** When you dispatch
+  the single browser agent in the background, narrate at launch: what it's doing, which
+  finalists it will visit, and that **Chrome will move on its own** and **quiet 30–60s gaps
+  between clicks are normal, not a hang.** Do NOT `TaskStop` a browser agent because of a quiet
+  period or a "looks frozen" inference — stop ONLY on an explicit user request or a real
+  surfaced error. Browser steps legitimately pause between actions (page loads, model
+  think-time).
+- **Bookable picks carry a verification tag:** `brand-verified ✓` (rate + availability
+  confirmed on the brand engine) or `aggregator-only ⚠` (price is a signal, not confirmed
+  bookable). A sold-out finalist confirmed on the brand site is dropped or shown struck-through,
+  never ranked #1.
+
+### Bookable-inventory verification (lodging / housing)
+When the query is **bookable-inventory** — lodging/housing intent (hotel, motel, inn, room,
+stay, lodge, Airbnb / short-term rental, apartment, rental, lease, sublet) — AND the answer
+will present a specific price/availability as actionable, then in **Wave 2** dispatch the single
+`vox-browser` agent to verify the **top 3 finalists'** current availability + nightly price on
+the **brand booking engine** (the property's own site, or the platform that actually takes the
+booking) BEFORE ranking them as bookable. The three checks run serially through the one browser
+agent. Aggregator prices (Google Hotels / Booking / Kayak snippets) are **availability signals
+only** — they may rank candidates but may NOT be presented as "book this at $X" until brand-
+verified. **No Chrome →** present aggregator prices with a `⚠ unverified — aggregator price,
+confirm on the brand site` tag, never as a booking instruction (honest degrade, not a halt).
+
 Availability gate (keyed off the routing-time PLACE / LOGISTICS need):
 - **Place data needed + `vox-maps` available (`maps-cli doctor` ok)** → dispatch `vox-maps` in Wave 1
   (stateless, parallel). Escalate ONLY the finalists it returns `no-capability`/blocked for to the one

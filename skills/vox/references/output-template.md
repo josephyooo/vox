@@ -21,7 +21,9 @@ Company/event, news) — and carry that choice to render. Do not re-decide the s
 1. How I built this *(shared)*.
 2. **Ranked table** — columns map one-to-one to the rubric dimensions, ordered by the user's stated
    priority. Annotate cells with corroborating-source signals (e.g. "Reddit T1 + X") and confidence
-   marks.
+   marks. For lodging / bookable-inventory rows, each finalist carries a verification tag —
+   `brand-verified ✓` (rate + availability confirmed on the brand booking engine) or
+   `aggregator-only ⚠` (price is a signal, not confirmed bookable) — so the render carries it.
 3. **How to read it** — prose grouping picks by which dimension each one wins.
 4. Flags / excluded · Sources that failed / blocked · Bottom line ("My call") · Next actions *(shared)*.
 
