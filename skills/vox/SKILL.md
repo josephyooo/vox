@@ -31,7 +31,10 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    (rating × review-volume / hours / address) → the places tier (`vox-maps`, primary, parallel);
    logistics / transit detours / "detour with a stop" → the browser tier (`vox-browser`, Maps
    directions); general-search gaps + bot-blocked-but-important reads → the browser tier (Google)**.
-   Mark which sub-questions NEED the places tier or browser tier (drives the Places-tier gate below). **Video collections / playlists /
+   Mark which sub-questions NEED the places tier or browser tier (drives the Places-tier gate below).
+   **Product / "is this a good price right now?" / price-history / shopping sub-questions → the product
+   tier (`vox-amazon`, Wave 1, stateless, parallel)**; mark which finalists NEED the full daily curve
+   (drives the Product-tier gate + Keepa escalation below). **Video collections / playlists /
    explicit video-URL lists → the video tier (`vox-video`)**, which ingests each video and surfaces
    candidate places for the other sources to corroborate (drives the Video-tier gate below).
 3. **Wave 1 — discovery.** Dispatch ONE subagent per source IN PARALLEL via the Agent tool. NOTE:
@@ -55,6 +58,13 @@ fabricate; degrade honestly. All work runs on the user's subscription.
    `vox-maps`/SKILL.md and calls `maps-cli places`. Dispatch it as `subagent_type: general-purpose`
    (it is a SKILL, not an agent type). Any place sub-question it returns `no-capability` or blocked
    (exit 3) for → escalate THAT sub-question to the single `vox-browser` agent.
+   When PRODUCT / price-history sub-questions are NEEDED and the product tier is available
+   (`amazon-cli doctor` ok), dispatch `vox-amazon` in Wave 1 as a STATELESS source (like the HTTP
+   three — it owns no shared resource, so it runs in parallel and may process multiple finalists
+   concurrently); it loads `vox-amazon`/SKILL.md and calls `amazon-cli search`/`price`. Dispatch it as
+   `subagent_type: general-purpose` (it is a SKILL, not an agent type), pin `model: opus`. Any finalist
+   it tags `needs-browser: keepa-history(...)` (the full daily curve) → escalate THAT tag to the single
+   `vox-browser` agent (see the **Product & price-history tier**).
    When the INPUT is a TikTok collection / playlist / video-URL list, `vox-video` is the Wave-1
    **discovery driver**: dispatch exactly ONE `vox-video` agent (it loads `vox-video`/SKILL.md and
    runs its two-phase ingest→extract; it REQUIRES `mw` + `ffmpeg` + `tiktok-cli`). Treat its surfaced
@@ -174,6 +184,36 @@ A late `needs-browser` escalation (trigger b) that can't be served because Chrom
 NOT a hard halt — `vox-web` already disclosed the gap; note it and move on. A `vox-maps` or
 `vox-browser` agent that returns no usable digest (orphaned/dead) counts as UNavailable for its
 sub-questions.
+
+## Product & price-history tier (Amazon via amazon-cli; Keepa curve via the one browser)
+Product / "is this a good price right now?" / "price history" / shopping sub-questions are served by
+the **product tier** (`vox-amazon` → `amazon-cli`: curl_cffi search + CamelCamelCamel summary). It is
+STATELESS and owns no shared resource, so it runs in **Wave 1 in parallel** with reddit/x/web (like
+`vox-maps`). At routing (step 2), **mark which finalists NEED the full daily curve** — that drives the
+Keepa escalation below. The full daily price-history (Keepa) needs the real Chrome and is served by the
+SAME single `vox-browser` agent that owns logistics/place-fallback — never a second browser agent.
+
+Availability gate (keyed off the routing-time PRODUCT / full-history need):
+- **`amazon-cli doctor` ok** → dispatch `vox-amazon` in Wave 1 (stateless, parallel). It runs
+  `amazon-cli search` (category) or resolves the ASIN directly (named product / ASIN / URL), then
+  `amazon-cli price <ASIN>` per finalist for the current + CCC current/low/high/avg summary.
+- **Full-history needed + Chrome up** → `vox-amazon` emits `needs-browser: keepa-history(asin=<ASIN>,
+  domainId=1)` tags; escalate them to the single `vox-browser` agent (it captures Keepa and runs
+  `amazon-cli keepa-decode` → `{current, series, stats}`), mirroring the vox-maps→vox-browser escalation.
+- **Full-history needed + no Chrome** → degrade to the CCC summary (low/high/avg) with a confidence
+  penalty + a one-line "no daily-curve coverage" note. Honest degrade, never a fabricated series.
+- **`amazon-cli` unavailable (exit 4)** → declare lost Amazon coverage; proceed with the HTTP three.
+- **Single-browser coordination:** if a run needs BOTH logistics AND Keepa history, the one
+  `vox-browser` agent serves them SERIALLY (never a second browser agent).
+- **No CAPTCHA solving** (restate the hard rule): an Amazon bot-check / Keepa Turnstile *interactive*
+  challenge → `blocked` → degrade to CCC. Never solve, never bypass.
+- **Honesty carry-through:** `priceStatus`/`reviewCountStatus == unavailable` render as `⚠`, never `0`;
+  a `blocked` search is a partial candidate set, explicitly disclosed; cite every figure to the Amazon
+  `/dp/<ASIN>` or CCC product URL.
+
+`vox-amazon` is a SKILL, not a registered agent type — dispatch it in Wave 1 as
+`subagent_type: general-purpose` (like `vox-maps`), told to invoke the `vox-amazon` skill as its FIRST
+action; pin `model: opus`. Never pass `subagent_type: vox-amazon` (it errors "Agent type not found").
 
 ## Video tier (collection analyzer; halt-by-default on missing prereqs)
 Triggered when the input is a TikTok collection / playlist / video-URL list (not a plain topic

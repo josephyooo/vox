@@ -24,6 +24,17 @@ Company/event, news) — and carry that choice to render. Do not re-decide the s
    marks. For lodging / bookable-inventory rows, each finalist carries a verification tag —
    `brand-verified ✓` (rate + availability confirmed on the brand booking engine) or
    `aggregator-only ⚠` (price is a signal, not confirmed bookable) — so the render carries it.
+   For **product / shopping rows with a price-history read**, each finalist carries a
+   **current-vs-typical** element: the current price vs its typical (Keepa daily-curve average, else
+   the CCC summary average), with a **per-figure provenance tag** —
+   `keepa ✓` (decoded full daily curve from the browser agent), `ccc-summary ⚠` (CamelCamelCamel
+   current/low/high/avg only — no daily curve), or `amzpy` (best-effort search-time price) — plus a
+   confidence mark. Phrase the read against the typical (e.g. "$278 now — ~11% under the $312 1-yr avg
+   `keepa ✓`" / "at-or-below typical `ccc-summary ⚠`"). A price/volume the source marked
+   `unavailable` renders `⚠`, NEVER `$0`; a Keepa curve that was blocked or had no Chrome renders the
+   CCC-summary typical with a one-line "no daily-curve coverage" note, never a fabricated series. Honor
+   the citation + honesty gates — each figure sits next to its Amazon `/dp/<ASIN>` or
+   camelcamelcamel.com URL.
 3. **How to read it** — prose grouping picks by which dimension each one wins.
 4. Flags / excluded · Sources that failed / blocked · Bottom line ("My call") · Next actions *(shared)*.
 
@@ -52,3 +63,7 @@ reasons). Show this when the user asks "how thorough was this?" or breadth matte
   (`web-only`, `web+Reddit`); a blanket "all 2+ corroborated" is forbidden when any claim is 1-channel.
 - Flag single-source numbers and thin samples explicitly (e.g. "4.9/207 — high on quality, lower on
   consistency").
+- **Price-history provenance** (product rows) — every price/typical figure carries a source tag:
+  `keepa ✓` (decoded full daily curve) > `ccc-summary ⚠` (current/low/high/avg summary, no daily
+  curve) > `amzpy` (best-effort search-time price). A Keepa figure may not be claimed when the curve
+  was blocked / no Chrome — degrade to `ccc-summary ⚠` with a "no daily-curve coverage" note.
