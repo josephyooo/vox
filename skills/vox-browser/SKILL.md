@@ -50,6 +50,38 @@ explicitly (`available: false`) — never infer availability from a Google Hotel
 aggregator price. If the brand engine can't be reached, return `available: null` with the reason
 so the orchestrator degrades to the aggregator-only `⚠` tag rather than asserting bookability.
 
+## Keepa price-history playbook
+**When:** invoked by the orchestrator with one or more escalated `keepa-history(asin, domainId)` tags.
+
+**Steps:**
+1. `tabs_context_mcp` / create a tab; `navigate` to `https://keepa.com/#!product/{domainId}-{ASIN}`
+   (domainId 1 = amazon.com US). Wait ~4s.
+2. Inject the tee (run via `javascript_tool`):
+   ```js
+   window.__dec = window.__dec || [];
+   if (window.fzstd && !window.fzstd.decompress.__teed) {
+     const o = window.fzstd.decompress;
+     const w = function(...a){ const r=o.apply(this,a);
+       try{ const s=new TextDecoder().decode(r);
+         if(s[0]==='{') window.__dec.push(s); }catch(e){} return r; };
+     w.__teed = true; window.fzstd.decompress = w;
+   }
+   ```
+3. For each target ASIN, `javascript_tool`: `location.hash = '#!product/{domainId}-{ASIN}'`, wait ~3s,
+   then read the last `window.__dec` entry whose JSON `.asin` matches.
+4. Save that raw JSON to a temp file and decode with the single tested decoder:
+   `amazon-cli keepa-decode <tmpfile>` (via Bash) → `{current, series, stats}`.
+5. Put the decoded current/stats (and, if asked, the series) into the digest, cited to the
+   keepa.com product URL.
+
+**Safety (HARD):** if keepa.com presents an interactive **Cloudflare Turnstile** challenge (not the
+silent pass), or any CAPTCHA, **do not solve it** — mark `status: blocked` and return so the
+orchestrator degrades to CCC. Never enter Keepa credentials. Read-only.
+
+**Note:** the data rides a WebSocket to `push.keepa.com` (no XHR); the Amazon-page Keepa chart is a
+cross-origin iframe — do not try to read it from the Amazon DOM. Decode logic lives only in
+`amazon-cli keepa-decode`.
+
 ## Return
 The digest contract, led by the `paired:` (or `no-capability`) line. Maps figures MUST mark
 band-vs-verified. Status: `ok` | `no-signal` | `no-capability`. Empty → no-signal. Never fabricate.
