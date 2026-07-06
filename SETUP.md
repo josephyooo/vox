@@ -19,34 +19,26 @@ honestly when a tool is missing, so you can stop after the tiers you need.
   Claude Code on your subscription. There is no separate Vox API key.
 - **Homebrew**, **Python ≥3.10** (the repo venvs are tested/pinned on 3.14.5), **Node** (for `bird`),
   **Go** (for `gosom`). Install as needed: `brew install python go node gh`.
-- **GitHub access — the first-party repos are PRIVATE** (`vox`, `tiktok-api-cli`, `maps-cli`;
-  `reddit-cli` is third-party via Homebrew, see §3). Authenticate before cloning:
-
-  ```bash
-  gh auth login          # HTTPS, or add your SSH key to GitHub instead
-  ```
-
-  **[HUMAN-ONLY]** `gh auth login` is an interactive browser/device flow — an agent cannot complete
-  it unattended. For an automated/agent setup use a non-interactive path: set a Personal Access Token
-  via `export GH_TOKEN=<token>` (or `gh auth login --with-token <<<"$token"`), **or** add an SSH key
-  to GitHub and clone via the SSH URLs noted in §1.
-
-  (If you later make the repos public, this whole step becomes unnecessary.)
+- **GitHub access — the first-party repos are PUBLIC** (`vox`, `maps-cli`, `tiktok-api-cli`,
+  `amazon-cli`; `reddit-cli` is third-party via Homebrew, see §3). No authentication is needed to
+  clone them — the `git clone` commands in §1 work anonymously over HTTPS. You only need GitHub auth
+  (`gh auth login`, an SSH key, or `GH_TOKEN`) if you intend to **push** changes back.
 
 ---
 
 ## 1. Clone the first-party repos
 
-All under `github.com/josephyooo`:
+All under `github.com/josephyooo` — public, so these clone without authentication:
 
 ```bash
 mkdir -p ~/projects && cd ~/projects
 git clone https://github.com/josephyooo/vox.git
 git clone https://github.com/josephyooo/maps-cli.git
 git clone https://github.com/josephyooo/tiktok-api-cli.git
+git clone https://github.com/josephyooo/amazon-cli.git
 ```
 
-Using SSH instead of an HTTPS token? Swap each URL for `git@github.com:josephyooo/<repo>.git`.
+Prefer SSH? Swap each URL for `git@github.com:josephyooo/<repo>.git`.
 
 **Repo → binary name map** (the one non-obvious mapping — the skills call the *binary* name):
 
@@ -55,6 +47,7 @@ Using SSH instead of an HTTPS token? Swap each URL for `git@github.com:josephyoo
 | `vox` | *(skills only, no binary)* | orchestrator |
 | `maps-cli` | `maps-cli` | Maps / places (`vox-maps`) |
 | `tiktok-api-cli` | **`tiktok-cli`** | Video (`vox-video`) |
+| `amazon-cli` | `amazon-cli` | Product & price-history (`vox-amazon`) |
 
 ---
 
@@ -86,6 +79,11 @@ cd ~/projects/tiktok-api-cli
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/python -m playwright install chromium   # browser binary; live cmds fail exit 4 without it
 ln -sf "$PWD/.venv/bin/tiktok-cli" ~/.local/bin/tiktok-cli
+
+# amazon-cli (Product & price-history tier)
+cd ~/projects/amazon-cli
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+ln -sf "$PWD/.venv/bin/amazon-cli" ~/.local/bin/amazon-cli
 
 # vox dev tooling (skills are prose; the venv only runs the gate)
 cd ~/projects/vox
@@ -175,9 +173,9 @@ Nothing below is in git (by design) — re-create each on the new machine. Only 
 installed. Steps marked **[HUMAN-ONLY]** need an interactive browser/GUI and cannot be done
 unattended by an agent.
 
-- [ ] **GitHub** (required FIRST — gates cloning the private repos) → `gh auth login`
-  (**[HUMAN-ONLY]**, or the `GH_TOKEN` / SSH path in §0). Stored in `~/.config/gh/hosts.yml` (token)
-  or `~/.ssh/` (key).
+- [ ] **GitHub** (optional — the repos are public, so cloning needs no auth; only needed to *push*)
+  → `gh auth login` (**[HUMAN-ONLY]**, or the `GH_TOKEN` / SSH path in §0). Stored in
+  `~/.config/gh/hosts.yml` (token) or `~/.ssh/` (key).
 - [ ] **TikTok `ms_token`** → `tiktok-cli auth` (**[HUMAN-ONLY]** — opens a browser to harvest the
   cookie; or `tiktok-cli auth --login` for a higher-trust token). Saves to
   `~/.config/tiktok-cli/token` (chmod 600). See `tiktok-api-cli/README.md`.

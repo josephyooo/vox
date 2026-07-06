@@ -15,8 +15,8 @@ Video→`tiktok-cli`+`mw`+`ffmpeg`, browser/logistics→the `claude-in-chrome` M
 whatever is present and degrades honestly.
 
 **Setting up on a fresh machine?** This is a multi-repo system (sibling CLIs + external tools).
-Follow **[SETUP.md](SETUP.md)** end-to-end — it covers GitHub access (the repos are private),
-cloning, the sibling installs, external tools, MCP setup, credential re-auth, and verification.
+Follow **[SETUP.md](SETUP.md)** end-to-end — it covers cloning the public repos, the sibling
+installs, external tools, MCP setup, credential re-auth, and verification.
 
 ## Use
 In Claude Code: `/vox best running shoes for flat feet under $150`
