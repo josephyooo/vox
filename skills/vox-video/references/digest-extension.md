@@ -1,8 +1,8 @@
 # Video digest extension
 
-`vox-video` returns the standard 8-section [digest contract](../../vox/references/digest-contract.md).
+`vox-video` returns the standard [digest contract](../../vox/references/digest-contract.md).
 This file says how video-only signals populate those sections — and the five rules that keep it
-honest. The orchestrator ingests the SAME 8 sections; video just makes them richer.
+honest. The orchestrator ingests the same sections; video just makes them richer.
 
 ## How video signals map onto the digest
 - **Claims table** — each row's source URL is the **video URL with a timestamp/frame** (`…/video/<id>`

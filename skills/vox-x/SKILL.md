@@ -15,8 +15,10 @@ Read-only: use only check/search/read/thread/replies/user-tweets.
 ## Loop
 1. Two-stage queries: broad area queries to SURFACE candidate names → targeted per-NAME queries to
    confirm sentiment. Specific named-entity queries beat generic terms (which return spam/noise).
-2. `bird search "<query>" -n 15 --json`. Parse JSON with a HELPER SCRIPT (write `/tmp/voxfmt.py`
-   with an explicit `for` loop) — inline `python3 -c` with a print-in-comprehension raises SyntaxError.
+2. `bird search "<query>" -n 15 --json` prints a JSON array of tweets
+   `{id, text, createdAt, likeCount, author:{username,name}}` (no url field). Format inline:
+   `bird search "<query>" -n 15 --json | jq -r '.[] | "\(.text) — @\(.author.username) https://x.com/\(.author.username)/status/\(.id)"'`.
+   With pagination flags (`--all` / `--max-pages`) the output is `{tweets, nextCursor}`: use `.tweets[]`.
 3. Rank by count of INDEPENDENT corroborating users; capture verbatim text + permalink per claim.
    Actively flag closure/negative signals. Discard zero-result multi-constraint queries (don't retry-tweak).
    Beware: no geo filter; short/OR queries match foreign-language substrings — discard those.

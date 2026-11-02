@@ -16,29 +16,30 @@ honestly when a tool is missing, so you can stop after the tiers you need.
 
 - **macOS or Linux.** The legacy `mw` video backend is Mac-only; `vidread` runs anywhere; the browser
   tier needs Chrome + Claude in Chrome.
-- **Homebrew**, **Python 3.14** (the repo venvs are built on 3.14.5), **Node** (for `bird`),
+- **An Anthropic Claude subscription** — Vox is a set of Claude Code skills; every tier runs inside
+  Claude Code on your subscription. There is no separate Vox API key.
+- **Homebrew**, **Python ≥3.10** (the repo venvs are tested/pinned on 3.14.5), **Node** (for `bird`),
   **Go** (for `gosom`). Install as needed: `brew install python go node gh`.
-- **GitHub access — the first-party repos are PRIVATE** (`vox`, `tiktok-api-cli`, `maps-cli`;
-  `reddit-cli` is third-party via Homebrew, see §3). Authenticate before cloning:
-
-  ```bash
-  gh auth login          # HTTPS, or add your SSH key to GitHub instead
-  ```
-
-  (If you later make the repos public, this step becomes unnecessary.)
+- **GitHub access — the first-party repos are PUBLIC** (`vox`, `maps-cli`, `tiktok-api-cli`,
+  `amazon-cli`; `reddit-cli` is third-party via Homebrew, see §3). No authentication is needed to
+  clone them — the `git clone` commands in §1 work anonymously over HTTPS. You only need GitHub auth
+  (`gh auth login`, an SSH key, or `GH_TOKEN`) if you intend to **push** changes back.
 
 ---
 
 ## 1. Clone the first-party repos
 
-All under `github.com/josephyooo`:
+All under `github.com/josephyooo` — public, so these clone without authentication:
 
 ```bash
 mkdir -p ~/projects && cd ~/projects
 git clone https://github.com/josephyooo/vox.git
 git clone https://github.com/josephyooo/maps-cli.git
 git clone https://github.com/josephyooo/tiktok-api-cli.git
+git clone https://github.com/josephyooo/amazon-cli.git
 ```
+
+Prefer SSH? Swap each URL for `git@github.com:josephyooo/<repo>.git`.
 
 **Repo → binary name map** (the one non-obvious mapping — the skills call the *binary* name):
 
@@ -47,6 +48,7 @@ git clone https://github.com/josephyooo/tiktok-api-cli.git
 | `vox` | *(skills only, no binary)* | orchestrator |
 | `maps-cli` | `maps-cli` | Maps / places (`vox-maps`) |
 | `tiktok-api-cli` | **`tiktok-cli`** | Video, legacy backend; also TikTok comments/collections (`vox-video`) |
+| `amazon-cli` | `amazon-cli` | Product & price-history (`vox-amazon`) |
 
 ---
 
@@ -54,6 +56,18 @@ git clone https://github.com/josephyooo/tiktok-api-cli.git
 
 Each is an editable install in its own venv; then symlink the console script onto PATH, because
 the skills invoke the bare names `maps-cli` / `tiktok-cli`.
+
+**First, create the user-local bin dir and put it on your PATH** — it does not exist by default on
+macOS, and the symlinks below (and all later verification) fail without it:
+
+```bash
+mkdir -p ~/.local/bin
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;                                   # already on PATH
+  *) echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc   # use ~/.bashrc if you use bash
+     export PATH="$HOME/.local/bin:$PATH" ;;                   # and for this shell, now
+esac
+```
 
 ```bash
 # maps-cli (Maps/places tier)
@@ -68,18 +82,25 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/python -m playwright install chromium   # browser binary; live cmds fail exit 4 without it
 ln -sf "$PWD/.venv/bin/tiktok-cli" ~/.local/bin/tiktok-cli
 
+# amazon-cli (Product & price-history tier)
+cd ~/projects/amazon-cli
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+ln -sf "$PWD/.venv/bin/amazon-cli" ~/.local/bin/amazon-cli
+
 # vox dev tooling (skills are prose; the venv only runs the gate)
 cd ~/projects/vox
 python3 -m venv .venv && .venv/bin/pip install -r requirements-lock.txt
 ```
 
-Ensure `~/.local/bin` is on your PATH. To pin the **exact** known-good dependency set instead of
-resolving latest, each Python repo ships a `requirements-lock.txt` (captured on Python 3.14.5):
-
-```bash
-.venv/bin/pip install -r requirements-lock.txt && .venv/bin/pip install -e . --no-deps   # maps-cli, tiktok-api-cli
-.venv/bin/pip install -r requirements-lock.txt   # vox: nothing to install editable
-```
+> **Pin the exact known-good deps (recommended for a faithful clone).** Instead of resolving latest,
+> the two CLIs (`maps-cli`, `tiktok-api-cli`) ship a `requirements-lock.txt` captured on Python
+> 3.14.5 — use it *in place of* the `pip install -e ".[dev]"` line above:
+>
+> ```bash
+> .venv/bin/pip install -r requirements-lock.txt && .venv/bin/pip install -e . --no-deps
+> ```
+>
+> (`vox` ships one too, pinning just its gate tools — `pytest`/`ruff`.)
 
 ---
 
@@ -93,9 +114,9 @@ is absent.
 | `reddit-cli` | Reddit (`vox-reddit`) | `brew install alceal/tap/reddit-cli` | third-party (alceal); tested v0.2.2 |
 | `bird` | X / Twitter (`vox-x`) | `npm install -g @steipete/bird` | needs Node; tested v0.8.0 |
 | `ffmpeg` | Video (`vox-video`) | `brew install ffmpeg` | frame extraction |
-| `mw` (MacWhisper) | Video (legacy Mac backend) | install **MacWhisper** (goodsnooze) → provides `mw` at `/usr/local/bin/mw` | **Pro license** + the **parakeet-v3** model the tier uses |
+| `mw` (MacWhisper) | Video (legacy Mac backend) | **[HUMAN-ONLY]** install the **MacWhisper** GUI app (by goodsnooze) → provides `mw` at `/usr/local/bin/mw` | needs a **Pro license** (one-time purchase, activated in-app) + the **parakeet-v3** model (download from the app's Models UI). |
 | `vidread` | Video (`vox-video`, preferred backend) | sibling repo `vidread` (no published remote yet): `conda env create -f environment.yml && conda activate vidread && pip install -e .`, then symlink `vidread` onto PATH | needs `ffmpeg` + `yt-dlp`; TikTok + YouTube |
-| `gosom` | Maps (`vox-maps`, via `maps-cli`) | `brew install go && go install github.com/gosom/google-maps-scraper@latest` → `~/go/bin/` | first lookup downloads playwright Chromium |
+| `gosom` | Maps (`vox-maps`, via `maps-cli`) | `brew install go && go install github.com/gosom/google-maps-scraper@latest` → `~/go/bin/` | installs to `~/go/bin/` — NOT on PATH by default; `maps-cli` auto-discovers it there (override with `$MAPS_CLI_GOSOM_BIN`). First lookup downloads playwright Chromium. |
 | `agy` *(optional)* | Video soft cross-check | `curl -fsSL https://antigravity.google/cli/install.sh \| bash` (Google Antigravity CLI) → `~/.local/bin/agy` | OPTIONAL; only `vox-video`; soft-gated (records "agy unavailable" and proceeds if absent). Needs Gemini access. |
 
 Notes:
@@ -113,10 +134,11 @@ Two tiers ride on MCP servers rather than CLIs. Both are capability-gated — sk
 and skip cleanly when absent.
 
 - **`claude-in-chrome`** (browser/logistics tier, `vox-browser`) — provided by the **Claude in
-  Chrome** browser extension + its MCP, driving your real Chrome. Set it up per Anthropic's Claude
-  in Chrome instructions; the first `vox-browser` run pairs a browser. Without it, the browser tier
-  is unavailable (Vox halts only when a logistics query needs it, or a place query needs it *and*
-  `gosom` is also down — otherwise it just proceeds).
+  Chrome** browser extension + its MCP, driving your real Chrome. **[HUMAN-ONLY]** install + set it
+  up per Anthropic's [Claude in Chrome instructions](https://code.claude.com/docs/en/chrome); pairing
+  happens automatically on the first `vox-browser` run (no pre-pairing — just have the extension
+  installed and running). Without it, the browser tier is unavailable (Vox halts only when a
+  logistics query needs it, or a place query needs it *and* `gosom` is also down — otherwise it just proceeds).
 - **`firecrawl`** (optional, metered last-resort anti-bot rung 6 for `vox-web`) — pinned install + a launcher that loads
   the key from a file:
 
@@ -152,15 +174,23 @@ delete the repo or all skills break.
 ## 6. Re-establish credentials
 
 Nothing below is in git (by design) — re-create each on the new machine. Only do the tiers you
-installed.
+installed. Steps marked **[HUMAN-ONLY]** need an interactive browser/GUI and cannot be done
+unattended by an agent.
 
-- [ ] **TikTok `ms_token`** → `tiktok-cli auth` (or `tiktok-cli auth --login` for a higher-trust
-  token). Saves to `~/.config/tiktok-cli/token`. See `tiktok-api-cli/README.md`.
-- [ ] **X / `bird`** → `bird check`; follow its auth flow if it reports unauthenticated.
-- [ ] **Reddit** → run any `reddit-cli` command once and complete its auth if prompted.
-- [ ] **MacWhisper (`mw`)** → activate the Pro license in the app and download the **parakeet-v3** model.
+- [ ] **GitHub** (optional — the repos are public, so cloning needs no auth; only needed to *push*)
+  → `gh auth login` (**[HUMAN-ONLY]**, or the `GH_TOKEN` / SSH path in §0). Stored in
+  `~/.config/gh/hosts.yml` (token) or `~/.ssh/` (key).
+- [ ] **TikTok `ms_token`** → `tiktok-cli auth` (**[HUMAN-ONLY]** — opens a browser to harvest the
+  cookie; or `tiktok-cli auth --login` for a higher-trust token). Saves to
+  `~/.config/tiktok-cli/token` (chmod 600). See `tiktok-api-cli/README.md`.
+- [ ] **X / `bird`** → `bird check`, then **[HUMAN-ONLY]** complete its auth flow if unauthenticated.
+  `bird` reads your browser cookies — it keeps no on-disk secret (only config under `~/.config/bird/`).
+- [ ] **Reddit** → run any `reddit-cli` command once and **[HUMAN-ONLY]** complete its auth if
+  prompted. Credentials are stored at `~/.config/reddit-cli/.env`.
+- [ ] **MacWhisper (`mw`)** → **[HUMAN-ONLY]** activate the Pro license in the app and download the
+  **parakeet-v3** model from its Models UI (both live inside the app).
 - [ ] **`agy`** *(optional)* → run `agy` once with no args to complete Google sign-in.
-- [ ] **Chrome pairing** for `claude-in-chrome` → completed on first `vox-browser` run.
+- [ ] **Chrome pairing** for `claude-in-chrome` → **[HUMAN-ONLY]**, completed on first `vox-browser` run.
 - [ ] **Firecrawl** *(optional)* → key in `~/.config/vox/firecrawl.env` (0600) + the launcher
   registration in §4.
 
@@ -176,7 +206,8 @@ tiktok-cli doctor               # TikTokApi + chromium + ms_token    (exit 0)
 bird check                      # X auth OK
 reddit-cli --help               # present
 vidread --help                  # video ingest backend present
-which vidread yt-dlp agy mw ffmpeg google-maps-scraper
+which vidread yt-dlp mw ffmpeg agy   # tools that live on PATH (mw legacy, agy optional)
+ls ~/go/bin/google-maps-scraper # gosom: maps-cli auto-discovers it here (not on PATH by default)
 
 # vox dev gate (from ~/projects/vox):
 .venv/bin/python tools/validate_skills.py skills   # prints [ok] per skill

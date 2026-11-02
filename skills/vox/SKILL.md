@@ -35,11 +35,13 @@ Read-only. NEVER fabricate; degrade honestly. All work runs on the user's subscr
    logistics / transit detours / "detour with a stop" → the browser tier (`vox-browser`, Maps
    directions); general-search gaps + bot-blocked-but-important reads → the browser tier (Google)**.
    Mark which sub-questions NEED the places tier or browser tier (drives the Places-tier gate
-   below). **TikTok/YouTube video URLs, playlists, or collections → the video tier (`vox-video`)**,
+   below). **Product / "is this a good price right now?" / price-history / shopping sub-questions → the
+   product tier (`vox-amazon`, Wave 1, stateless, parallel)**; mark which finalists NEED the full daily
+   curve (drives the Product-tier gate + Keepa escalation below). **TikTok/YouTube video URLs, playlists, or collections → the video tier (`vox-video`)**,
    which ingests each video and surfaces candidate places for the other sources to corroborate
    (drives the Video-tier gate below).
 3. **Wave 1 — discovery.** Dispatch ONE subagent per source IN PARALLEL via the Agent tool. NOTE:
-   every `vox-*` source (reddit, x, web, maps, browser, video) is a SKILL, not a registered agent
+   every `vox-*` source (reddit, x, web, maps, browser, video, amazon) is a SKILL, not a registered agent
    type — dispatch each as `subagent_type: general-purpose` (or `Explore`) and tell it to invoke its
    `vox-<source>` skill as its FIRST action; never pass `subagent_type: vox-reddit/…` (it errors
    "Agent type not found"). Each brief (Wave-2 verifiers too) is self-contained: target, fields to
@@ -53,7 +55,8 @@ Read-only. NEVER fabricate; degrade honestly. All work runs on the user's subscr
    When the INPUT is TikTok/YouTube video URLs, a playlist, or a collection, dispatch exactly ONE
    `vox-video` agent as the Wave-1 discovery driver (see **Video tier**); its surfaced entities are
    the candidate set the other sources corroborate (steps 4–5). `vox-maps` and `vox-browser` join this
-   wave only under the timing in **Places & browser tier** below.
+   wave only under the timing in **Places & browser tier** below; `vox-amazon` joins it when a product
+   sub-question is NEEDED and `amazon-cli doctor` is ok (see **Product & price-history tier**).
 4. **Corroborate.** Build a candidate × source matrix; promote only candidates in 2+ channels;
    resolve same-name/duplicate collisions early; label each pick with its corroborating sources.
    If none reaches 2 channels, keep Skeleton A with the best single-channel candidates, each tagged
@@ -131,6 +134,34 @@ There are THREE triggers for browser work:
 - **(b) Bot-blocked-but-important reads** — discovered DURING Wave 1 by `vox-web`, which tags such
   URLs `needs-browser`.
 
+- **Carry resolved review-volume forward.** Once a finalist's review volume is resolved in a
+  run, reuse that reconciled number across session resumes / follow-ups — never let a finalist's
+  volume silently change between turns (gosom can return a different list-card count on a later
+  fetch; the first resolved value wins unless a verification step deliberately re-checks it).
+- **Narrate the background browser; never self-stop on an inferred stall.** When you dispatch
+  the single browser agent in the background, narrate at launch: what it's doing, which
+  finalists it will visit, and that **Chrome will move on its own** and **quiet 30–60s gaps
+  between clicks are normal, not a hang.** Do NOT `TaskStop` a browser agent because of a quiet
+  period or a "looks frozen" inference — stop ONLY on an explicit user request or a real
+  surfaced error. Browser steps legitimately pause between actions (page loads, model
+  think-time).
+- **Bookable picks carry a verification tag:** `brand-verified ✓` (rate + availability
+  confirmed on the brand engine) or `aggregator-only ⚠` (price is a signal, not confirmed
+  bookable). A sold-out finalist confirmed on the brand site is dropped or shown struck-through,
+  never ranked #1.
+
+### Bookable-inventory verification (lodging / housing)
+When the query is **bookable-inventory** — lodging/housing intent (hotel, motel, inn, room,
+stay, lodge, Airbnb / short-term rental, apartment, rental, lease, sublet) — AND the answer
+will present a specific price/availability as actionable, then in **Wave 2** dispatch the single
+`vox-browser` agent to verify the **top 3 finalists'** current availability + nightly price on
+the **brand booking engine** (the property's own site, or the platform that actually takes the
+booking) BEFORE ranking them as bookable. The three checks run serially through the one browser
+agent. Aggregator prices (Google Hotels / Booking / Kayak snippets) are **availability signals
+only** — they may rank candidates but may NOT be presented as "book this at $X" until brand-
+verified. **No Chrome →** present aggregator prices with a `⚠ unverified — aggregator price,
+confirm on the brand site` tag, never as a booking instruction (honest degrade, not a halt).
+
 Availability gate (keyed off the routing-time PLACE / LOGISTICS need):
 - **Place data needed + `vox-maps` available (`maps-cli doctor` ok)** → dispatch `vox-maps` per the
   timing above. Escalate ONLY the (a-data) finalists to `vox-browser` (when Chrome is up).
@@ -150,6 +181,35 @@ A late `needs-browser` escalation (trigger b) that can't be served because Chrom
 NOT a hard halt — `vox-web` already disclosed the gap; note it and move on. A `vox-maps` or
 `vox-browser` agent that returns `no-capability` or no usable digest (orphaned/dead) counts as
 UNavailable for its sub-questions.
+
+## Product & price-history tier (Amazon via amazon-cli; Keepa curve via the one browser)
+Product / "is this a good price right now?" / "price history" / shopping sub-questions are served by
+the **product tier** (`vox-amazon` → `amazon-cli`: curl_cffi search + CamelCamelCamel summary). It is
+STATELESS and owns no shared resource, so it runs in **Wave 1 in parallel** with reddit/x/web. At routing (step 2), **mark which finalists NEED the full daily curve** — that drives the
+Keepa escalation below. The full daily price-history (Keepa) needs the real Chrome and is served by the
+SAME single `vox-browser` agent that owns logistics/place-fallback — never a second browser agent.
+
+Availability gate (keyed off the routing-time PRODUCT / full-history need):
+- **`amazon-cli doctor` ok** → dispatch `vox-amazon` in Wave 1 (stateless, parallel). It runs
+  `amazon-cli search` (category) or resolves the ASIN directly (named product / ASIN / URL), then
+  `amazon-cli price <ASIN>` per finalist for the current + CCC current/low/high/avg summary.
+- **Full-history needed + Chrome up** → `vox-amazon` emits `needs-browser: keepa-history(asin=<ASIN>,
+  domainId=1)` tags; escalate them to the single `vox-browser` agent (it captures Keepa and runs
+  `amazon-cli keepa-decode` → `{current, series, stats}`), mirroring the vox-maps→vox-browser escalation.
+- **Full-history needed + no Chrome** → degrade to the CCC summary (low/high/avg) with a confidence
+  penalty + a one-line "no daily-curve coverage" note. Honest degrade, never a fabricated series.
+- **`amazon-cli` unavailable (exit 4)** → declare lost Amazon coverage; proceed with the HTTP three.
+- **Single-browser coordination:** if a run needs BOTH logistics AND Keepa history, the one
+  `vox-browser` agent serves them SERIALLY (never a second browser agent).
+- **No CAPTCHA solving** (restate the hard rule): an Amazon bot-check / Keepa Turnstile *interactive*
+  challenge → `blocked` → degrade to CCC. Never solve, never bypass.
+- **Honesty carry-through:** `priceStatus`/`reviewCountStatus == unavailable` render as `⚠`, never `0`;
+  a `blocked` search is a partial candidate set, explicitly disclosed; cite every figure to the Amazon
+  `/dp/<ASIN>` or CCC product URL.
+
+`vox-amazon` is a SKILL, not a registered agent type — dispatch it in Wave 1 as
+`subagent_type: general-purpose` (like `vox-maps`), told to invoke the `vox-amazon` skill as its FIRST
+action; pin `model: opus`. Never pass `subagent_type: vox-amazon` (it errors "Agent type not found").
 
 ## Video tier (TikTok/YouTube video analyzer; halt-by-default on missing prereqs)
 Triggered when the input is TikTok/YouTube video URLs, playlists, or collections (not a plain topic

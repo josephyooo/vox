@@ -12,7 +12,7 @@ the query already states its criteria.
 
 ## Consumer product (e.g. "best running shoes")
 - Dimensions: the attributes that matter (e.g. cushioning, support, durability, price).
-- Sources: Reddit (niche subs) + review sites + X.
+- Sources: Reddit (niche subs) + review sites + X + vox-amazon (price / rating × volume / price history).
 - Output: Skeleton A — ranked model table with attribute columns.
 
 ## Media / model sentiment (e.g. "how good is the new Claude model")

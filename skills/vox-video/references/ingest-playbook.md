@@ -24,7 +24,7 @@ workdir/<collection-slug>/
 
 ## Per-video steps
 1. **Enumerate** → `manifest.json`. A bare URL list is used as-is. A YouTube playlist or TikTok
-   collection: `yt-dlp --flat-playlist --print url "<url>"` (for YouTube, add `--proxy socks5://127.0.0.1:1055`
+   collection: `yt-dlp --flat-playlist --print url "<url>"` (for YouTube, add `--proxy <residential-socks5-url>`
    if yt-dlp hits a bot wall), or `tiktok-cli` per [tiktok-adapter](tiktok-adapter.md). If nothing can
    enumerate it, return Status `no-capability` asking the user to paste the video URLs. Never report
    "0 videos".

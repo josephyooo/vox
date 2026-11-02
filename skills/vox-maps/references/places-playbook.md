@@ -17,7 +17,7 @@ gosom/google-maps-scraper). No Chrome, no API key. Never average scores; disclos
 - `--json` emits ONE NDJSON object on stdout. Parse it; never screenshot.
 
 ## Output contract (per call)
-`{ name, rating, reviewCount, address, hours, priceBand?, category, mapsUrl, lat, lng,
+`{ name, rating, reviewCount, reviewCountStatus: "ok"|"unavailable", address, hours, priceBand?, category, mapsUrl, lat, lng,
    confidence: "high"|"low", alternatives: [{name, rating, reviewCount, address, mapsUrl}],
    source: "google-maps/gosom" }`
 - **Goodness = rating × review-VOLUME**, not raw stars (a 4.4 × 1,207 beats a thin 4.9). Report BOTH.
@@ -34,10 +34,9 @@ gosom/google-maps-scraper). No Chrome, no API key. Never average scores; disclos
   NOT the same as a tool failure.
 
 ## Missing volume (important)
-- A row can come back with `reviewCount` of `0` or `null` even when the place has reviews — gosom's
-  list-card extraction is incomplete under some Google DOM variants. Treat `0`/`null` reviewCount as
-  **volume-UNAVAILABLE → flag `⚠️`**, never as "0 reviews". If volume is the deciding figure and it
-  came back empty, say so and list that row under Sources that failed tagged `needs-browser`.
+- `reviewCountStatus: "unavailable"` (maps-cli already re-fetched once) → flag `⚠ volume-UNAVAILABLE`,
+  never "0 reviews". If volume decides the pick, say so and list that row under Sources that failed
+  tagged `needs-browser`.
 
 ## Exit codes → what to do
 - `0` → a record was printed (it may be a `confidence:"low"` / null match — still success).

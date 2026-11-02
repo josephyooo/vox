@@ -20,7 +20,7 @@ at bootstrap with `agy --help`:
 Run ONCE per downloaded video mp4, **before `video.mp4` is removed** (agy needs the file present). Photo
 carousels SKIP agy (record `agy: skipped`) — they keep their vision-on-slides path.
 
-Model `Gemini 3.1 Pro (Low)` (passed explicitly; agy's own default is Gemini 3.5 Flash Medium). Fixed
+Model `Gemini 3.8 Flash (High)`, passed explicitly (run `agy models` if the call errors on the model name). Fixed
 deterministic prompt → three parseable sections:
 
     agy -p "Analyze the video file <id>.mp4 in this workspace. Produce EXACTLY three sections:
@@ -28,7 +28,7 @@ deterministic prompt → three parseable sections:
     ## on-screen — any text visible on screen; if none write: (none)
     ## entities — bullet list of every business/place/brand name, each tagged (spoken) or (on-screen); if none write: (none)
     Do not invent or infer anything not present in the file." \
-      --model "Gemini 3.1 Pro (Low)" --add-dir <workdir> --sandbox --dangerously-skip-permissions
+      --model "Gemini 3.8 Flash (High)" --add-dir <workdir> --sandbox --dangerously-skip-permissions
 
 `--sandbox` is mandatory: agy auto-approves its tools while reading untrusted third-party media.
 
