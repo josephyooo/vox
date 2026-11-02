@@ -19,16 +19,15 @@ Pivot order when blocked:
    `https://archive.org/wayback/available?url=<url>`; if `archived_snapshots.closest.url` exists,
    fetch that snapshot. Cite the snapshot URL actually read plus its date, and mark
    freshness-sensitive fields (hours, prices, open/closed) `~`.
-6. **Firecrawl rung (last resort, METERED: may be billed to the user's card):** only for an
-   IMPORTANT page, only after WebFetch failed or was bot-walled AND every free rung above (incl.
-   archive) failed, and only if `ToolSearch(select:mcp__firecrawl__firecrawl_scrape)` finds it
-   (absent → skip; never a halt). Call `firecrawl_scrape` with `formats:["markdown"]`,
-   `onlyMainContent:true`, `proxy:"basic"` (never stealth/enhanced/auto). At most 2 calls per
-   vox-web agent; report the count on the digest's Source & capability line. Caveats: a third
-   party sees the fetch; public content only, never auth/paywalls; it may return a cached copy, so
-   pass `maxAge:0` for freshness-sensitive fields.
-7. **Browser rung (escalate, don't drive):** you are a STATELESS agent — you cannot drive the shared
+6. **Browser rung (escalate, don't drive):** you are a STATELESS agent — you cannot drive the shared
    browser. If the page is important, record its URL in the digest's "sources that failed" block
    tagged `needs-browser`. The orchestrator queues it for the single `vox-browser` agent (a real
    Chrome session loads most blocked pages).
-8. If even the browser can't get it: report the gap in "sources that failed". Never fabricate.
+7. **Firecrawl rung (final resort, METERED: may be billed to the user's card):** only when your brief
+   names a page `vox-browser` could not read, or says Chrome is unavailable, and only if
+   `ToolSearch(select:mcp__firecrawl__firecrawl_scrape)` finds it (absent → skip; never a halt). Call
+   `firecrawl_scrape` with `formats:["markdown"]`, `onlyMainContent:true`, `proxy:"basic"` (never
+   stealth/enhanced/auto). Report the call count on the digest's Source & capability line. Caveats: a
+   third party sees the fetch; public content only, never auth/paywalls; it may return a cached copy,
+   so pass `maxAge:0` for freshness-sensitive fields.
+8. If nothing above gets it: report the gap in "sources that failed". Never fabricate.

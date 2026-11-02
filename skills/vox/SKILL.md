@@ -17,7 +17,7 @@ Read-only. NEVER fabricate; degrade honestly. All work runs on the user's subscr
 0. **Capability-probe** sources you'll use (`reddit-cli --help`, `bird check`,
    `ToolSearch(select:WebSearch,WebFetch)`; for the places tier `maps-cli doctor`; for the browser
    tier `ToolSearch(select:mcp__claude-in-chrome__…)` + `list_connected_browsers`; `vox-browser`
-   decides which Chrome is local). If an HTTP source is missing, DECLARE which sub-questions lose
+   picks the Chrome). If an HTTP source is missing, DECLARE which sub-questions lose
    coverage and proceed with a confidence penalty — never fake a missing source.
    The places/browser tier has a stricter rule: see the **Places & browser tier** section below.
 1. **Parse** the query into an ordered criteria set (hard / soft / unknown). Locality and any
@@ -178,7 +178,9 @@ Availability gate (keyed off the routing-time PLACE / LOGISTICS need):
   → fall those sub-questions back to `vox-web`; mark every figure that lost places/browser
   corroboration with a LOWER-confidence mark + a one-line "no places/browser coverage" note.
 A late `needs-browser` escalation (trigger b) that can't be served because Chrome is unavailable is
-NOT a hard halt — `vox-web` already disclosed the gap; note it and move on. A `vox-maps` or
+NOT a hard halt — `vox-web` already disclosed the gap. If a `needs-browser` page matters and Chrome is
+unavailable or `vox-browser` could not read it, dispatch one directed `vox-web` verifier naming those
+pages for its Firecrawl rung; otherwise note the gap and move on. A `vox-maps` or
 `vox-browser` agent that returns `no-capability` or no usable digest (orphaned/dead) counts as
 UNavailable for its sub-questions.
 

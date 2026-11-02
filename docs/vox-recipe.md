@@ -112,7 +112,7 @@ Always run `reddit-cli --help` then `reddit-cli search --help; reddit-cli commen
 
 **Claude-in-Chrome (Google Maps) — only when present, driven by orchestrator only.**
 - Tools are **deferred/lazy** — pull each by exact MCP name via `ToolSearch(select:mcp__claude-in-chrome__…)`. Generic keyword searches return nothing.
-- Pairing: `list_connected_browsers` → pick THIS machine's Chrome by grepping each deviceId in the local profile's extension storage (see `skills/vox-browser/SKILL.md`; never guess) → `select_browser(deviceId)` → `tabs_context_mcp(createIfEmpty:true)`.
+- Pairing: use the deviceId from the brief or the browser-pool hook's message, else match `list_connected_browsers` against the local profile's extension storage (see `skills/vox-browser/SKILL.md`; never guess) → `select_browser(deviceId)` → `tabs_context_mcp(createIfEmpty:true)`.
 - **Navigate via direct URL, not UI typing.** Two patterns do all the work: `/maps/search/<url-encoded query>/@lat,lng,zoom` (returns `Name 4.5(7,129) · $20-30 · cuisine · address`) and `/maps/dir/?api=1&origin=…&destination=…&travelmode=transit`.
 - **Prefer `get_page_text` over screenshots** for result lists — parses rating/count/price/cuisine cleanly, no OCR.
 - Bundle actions in `browser_batch`, but **text grabs inside a batch fire before Maps renders** → split into `navigate → wait → get_page_text`.

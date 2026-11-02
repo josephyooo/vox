@@ -39,6 +39,6 @@ confidence. See `docs/superpowers/specs/2026-06-07-vox-design.md` and the mined 
 ## Roadmap
 Shipped since v1: the browser tier (`vox-browser`, Maps/logistics via Claude in Chrome), the
 gosom-backed places tier (`vox-maps`), the TikTok/YouTube video analyzer (`vox-video`, with an
-optional `agy`/Gemini cross-check), and Firecrawl as a capped, metered last-resort scrape rung in
+optional `agy`/Gemini cross-check), and Firecrawl as a metered final-resort scrape rung, after Chrome, in
 `vox-web`. Deferred: Instagram video ingest, a `vox "..."` shell wrapper, and private/own-collection
 TikTok access.

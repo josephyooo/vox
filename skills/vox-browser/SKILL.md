@@ -21,21 +21,18 @@ handle the finalists it flags blocked/no-capability, plus all logistics.)
    guess. (The orchestrator decides whether to halt or web-fall-back.)
 
 ## Pair once
-1. If the brief passed a deviceId, use it. Otherwise, for each deviceId from `list_connected_browsers`
-   run `grep -rlaF "$id" "<profile>/Local Extension Settings/fcoeoabgfenejglbffodgkkbkcdhcgfn"`, where
+1. If the brief passed a deviceId, `select_browser` it. Otherwise call `tabs_context_mcp(createIfEmpty:true)`.
+2. On a machine with a browser pool, a hook denies that first call and names the deviceId to use:
+   `select_browser` it without asking, then retry. If it is not connected, select the fallback the
+   message names. If every pool browser is busy, wait and retry; never override or steal the lock, and
+   never call `switch_browser`.
+3. With no pool, for each deviceId from `list_connected_browsers` run
+   `grep -rlaF "$id" "<profile>/Local Extension Settings/fcoeoabgfenejglbffodgkkbkcdhcgfn"`, where
    <profile> is `~/.config/google-chrome/Default` (Linux) or
-   `~/Library/Application Support/Google/Chrome/Default` (macOS).
-2. `select_browser` the single match → `tabs_context_mcp(createIfEmpty:true)`. Lead your digest with
-   `paired: <deviceId>, N tabs`.
-3. Zero or several matches → Status: no-capability ("could not identify this machine's Chrome"). Never
-   guess, never ask the user to pick, never select another machine's browser; `isLocal` is not a
-   discriminator. If a hook denies a browser call (e.g. Chrome in use by another session), don't retry
-   in a loop or override/steal the lock; return Status: no-capability ("Chrome busy") for the unserved
-   sub-questions.
-
-Browser steps legitimately pause between actions (navigations, page loads, think-time between
-clicks) — a 30–60s quiet gap is NOT a hang. Emit a short progress line between major steps where
-the harness allows, so a backgrounded run reads as alive.
+   `~/Library/Application Support/Google/Chrome/Default` (macOS), and `select_browser` the single match.
+   Zero or several matches → Status: no-capability ("could not identify this machine's Chrome"); never
+   guess, and `isLocal` is not a discriminator.
+4. Lead your digest with `paired: <deviceId>, N tabs`.
 
 ## Browser-control mechanics (use for every sub-question)
 - **Navigate by direct URL**, never UI typing. Build the URL, navigate, read.

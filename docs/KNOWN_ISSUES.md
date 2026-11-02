@@ -12,6 +12,9 @@ Open defects from live runs. Delete an entry when its fix lands.
 - `SKILL.md` treats WebSearch snippets as data, but WebSearch returns links plus model-written prose that can mangle facts. Cap those facts at `~`.
 - WebFetch's summarizing model can miss data that curl shows on the same page, such as phone and hours.
 
+## vox-video
+- `agy-crosscheck.md` calls `--sandbox` mandatory containment, but on Linux arm64 (agy 1.4.10) a `--sandbox --dangerously-skip-permissions` run still wrote to `$HOME` and reached the network. Without skip-permissions, headless agy denies the tool it needs to read media.
+
 ## vox-reddit
 - `reddit-cli browse <nonexistent sub>` prints rows with empty fields and no permalink. Treat them as "no such sub".
 - Name search misses venues mentioned only in comments. Drill threads and grep them.

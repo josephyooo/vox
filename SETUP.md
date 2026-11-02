@@ -139,7 +139,7 @@ and skip cleanly when absent.
   happens automatically on the first `vox-browser` run (no pre-pairing — just have the extension
   installed and running). Without it, the browser tier is unavailable (Vox halts only when a
   logistics query needs it, or a place query needs it *and* `gosom` is also down — otherwise it just proceeds).
-- **`firecrawl`** (optional, metered last-resort anti-bot rung 6 for `vox-web`) — pinned install + a launcher that loads
+- **`firecrawl`** (optional, metered final-resort anti-bot rung 7 for `vox-web`) — pinned install + a launcher that loads
   the key from a file:
 
   ```bash
@@ -154,7 +154,7 @@ and skip cleanly when absent.
   ```
 
   Firecrawl is metered and may be billed to your card; keep auto-recharge off. `vox-web` uses it only
-  as a capped last-resort scrape. Absent → `vox-web` skips the rung; never a halt.
+  after Chrome has failed or is unavailable. Absent → `vox-web` skips the rung; never a halt.
 
 ---
 
