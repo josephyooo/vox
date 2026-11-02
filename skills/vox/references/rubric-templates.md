@@ -6,7 +6,8 @@ the query already states its criteria.
 
 ## Places / food
 - Dimensions: rating × review-volume, sentiment, value, [logistics if geo].
-- Sources: Reddit + web critics (+ Maps in Phase 2).
+- Sources: Reddit + web critics + places tier (`vox-maps`, browser fallback); browser for logistics;
+  video tier if the user supplied video URLs.
 - Output: Skeleton A — ranked venue table.
 
 ## Consumer product (e.g. "best running shoes")

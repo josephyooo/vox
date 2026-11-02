@@ -4,6 +4,7 @@
 Keyed on stable concept words (not exact sentences) so reasonable rewording survives,
 but a silent DROP of any agy guardrail fails the gate.
 """
+import re
 from pathlib import Path
 
 VIDEO = Path(__file__).resolve().parents[1] / "skills" / "vox-video"
@@ -59,3 +60,9 @@ def test_skill_entrypoint_and_playbooks_wire_agy():
     # the ingest playbook documents the per-video agy stage + status field
     assert "agy" in ingest
     assert "agy.md" in ingest
+
+
+def test_vidread_is_invoked_with_comments():
+    # D1: vidread is the preferred backend; comments are opt-in, so every call passes --comments
+    assert "vidread" in TEXT
+    assert re.findall(r"vidread --json(?! --comments)", TEXT) == []

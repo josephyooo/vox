@@ -8,9 +8,10 @@ critical criteria pass). Critical criteria are marked *.
 - *CITATIONS: is every concrete claim/number backed by a source URL?
 - *CORROBORATION: are promoted picks supported by 2+ independent sources (or explicitly flagged single-source)?
 - *FABRICATION: is there NO invented data? (absence reported honestly where data was missing)
-- TEMPLATE: methodology + ranked table (columns = rubric dimensions) + flags/excluded + one honest pick?
+- TEMPLATE: renders the skeleton output-template.md prescribes for the family (A: ranked table, columns = rubric dimensions, one honest pick; B: Core facts / Sentiment & consensus / Themes & dissent, no forced winner) plus the shared invariants?
 - CONFIDENCE: per-figure confidence marks used (not one global hedge)?
 - DEGRADATION: blocked/failed sources listed; thin evidence stated rather than papered over?
+- *CONFLICTS: is every open cross-source conflict resolved or shown as `⚠️ (sources disagree: X vs Y — unverified)`, with no "corroborated on every key fact" while one is open? (pass if none arose)
 - *PROVENANCE: (video-sourced runs only; pass=n/a otherwise) does every spoken-claim quote trace to a video with a real transcript (no phantom quotes), and does every pick cite a video URL (+ timestamp/frame)?
 
 Output example:
@@ -21,4 +22,6 @@ FABRICATION: pass
 TEMPLATE: pass
 CONFIDENCE: pass
 DEGRADATION: pass
+CONFLICTS: pass
+PROVENANCE: pass
 VERDICT: fail

@@ -37,13 +37,13 @@ gosom/google-maps-scraper). No Chrome, no API key. Never average scores; disclos
 - A row can come back with `reviewCount` of `0` or `null` even when the place has reviews — gosom's
   list-card extraction is incomplete under some Google DOM variants. Treat `0`/`null` reviewCount as
   **volume-UNAVAILABLE → flag `⚠️`**, never as "0 reviews". If volume is the deciding figure and it
-  came back empty, say so and let the orchestrator escalate THAT figure to `vox-browser`.
+  came back empty, say so and list that row under Sources that failed tagged `needs-browser`.
 
 ## Exit codes → what to do
 - `0` → a record was printed (it may be a `confidence:"low"` / null match — still success).
 - `3` **blocked/empty** (anti-bot / scrollHeight after one retry) → report THIS finalist as a per-item
-  gap (the digest `Status` stays `ok` for the others) so the orchestrator escalates this place to
-  `vox-browser`.
+  gap: list it under Sources that failed tagged `needs-browser`; digest Status `partial` (`blocked` if
+  every finalist exited 3).
 - `4` **environment** (gosom binary / Chromium missing) → the whole tier has no capability; the SKILL
   bootstrap handles this (return `no-capability`).
 - `2` usage / `1` other → report as a failure row; never fabricate a place to fill the gap.

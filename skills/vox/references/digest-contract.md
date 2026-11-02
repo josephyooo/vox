@@ -14,10 +14,14 @@ special-case a source. Never fabricate; an empty result is a valid, explicit env
    figure, or a value looks like a likely extraction error. Record: the claim, value A (URL),
    value B (URL), and which (if either) you believe + why. Empty is fine — state "none".
 6. **Estimates labeled** — bullet list of every `~`/estimate value and the basis for it.
-7. **Sources that failed (not used)** — URL + reason (403 / 429 / JS-shell / not-listed /
-   wrong-entity). Empty is fine, but state "none".
+7. **Sources that failed (not used)** — URL + reason (403 / 429 / JS-shell / blocked / not-listed /
+   wrong-entity). Empty is fine, but state "none". End a line with the tag `needs-browser` when the
+   item is important and a real browser could retry it; the orchestrator queues it for `vox-browser`.
 8. **Bottom line** — a 1–3 sentence TL;DR for the orchestrator.
 
 ## Status
-If the source yielded nothing, return sections 1, 7, 8 with **Status: no-signal** and say so
-plainly. Do not invent items to fill the table.
+`Status:` one of `ok` · `partial` (some items or sub-questions unserved; list them in section 7) ·
+`no-capability` (a required tool is missing or unidentifiable; name it, its install, and the
+unserved sub-questions) · `blocked` (the source was reachable but hard-blocked for the whole query) ·
+`no-signal` (ran cleanly, found nothing: return sections 1, 7, 8 and say so plainly). Do not invent
+items to fill the table.

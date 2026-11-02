@@ -1,8 +1,8 @@
 # Video digest extension
 
-`vox-video` returns the standard 7-section [digest contract](../../vox/references/digest-contract.md).
+`vox-video` returns the standard 8-section [digest contract](../../vox/references/digest-contract.md).
 This file says how video-only signals populate those sections — and the five rules that keep it
-honest. The orchestrator ingests the SAME 7 sections; video just makes them richer.
+honest. The orchestrator ingests the SAME 8 sections; video just makes them richer.
 
 ## How video signals map onto the digest
 - **Claims table** — each row's source URL is the **video URL with a timestamp/frame** (`…/video/<id>`
@@ -13,11 +13,14 @@ honest. The orchestrator ingests the SAME 7 sections; video just makes them rich
 - **Corroboration notes** — carry the video-native fields: **engagement** (views/likes/saves as a
   popularity proxy), **creator + COI** (organic/sponsored/comped/affiliate), **recency** (upload date;
   flag stale claims).
+- **Conflicts** — transcript vs on-screen value (e.g. price), caption vs spoken, agy vs name-card
+  spelling: record both values with their video URL + timestamp/frame, even when R-A1 picks the
+  canonical name.
 - **Estimates labeled** — caption/on-screen-derived figures are `~` until verified; band-vs-verified
   prices follow the same rule the maps playbook uses.
 - **Sources that failed** — list ingest failures explicitly: empty-transcript videos (by id),
-  unresolved/garbled entities, rate-limited comments (`none_fetched` ≠ neutral), un-enumerated items,
-  and per-video `agy: unavailable` (the entity cross-check didn't run — a possibly-garbled name isn't
+  unresolved/garbled entities, rate-limited comments (`unavailable`/`skipped` ≠ neutral), un-enumerated
+  items, and per-video `agy: unavailable` (the entity cross-check didn't run — a possibly-garbled name isn't
   silently trusted) plus global `agy: disabled` when agy is absent.
 - **agy entity cross-check (supplementary)** — reconcile entity NAMES against `agy.md` per rules
   R-A1..R-A5 in [agy-crosscheck](agy-crosscheck.md): a corrected name carries a transparent
@@ -32,5 +35,5 @@ honest. The orchestrator ingests the SAME 7 sections; video just makes them rich
 3. **Every claim carries a URL** (+ timestamp/frame when spoken/on-screen) — traceability to the moment.
 4. **Engagement & recency are fields, not afterthoughts** — used as ranking inputs/tie-breakers; stale
    claims flagged from the upload date.
-5. **"No data" ≠ "neutral"** — record coverage (e.g. `comments: none_fetched`) so silence is never
+5. **"No data" ≠ "neutral"** — record coverage (e.g. `comments: unavailable`) so silence is never
    read as consensus.

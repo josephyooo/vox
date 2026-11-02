@@ -1,20 +1,20 @@
 # agy entity cross-check (supplementary)
 
 `agy` (Gemini via the user's edu subscription) is a **supplementary** entity-layer cross-check layered
-on the disciplined `mw + ffmpeg + vision` stack. It does TWO jobs only: (1) **correct garbled proper
-nouns** in entity names — mw's weak spot (mw "store wrecks" / "Elisa's" / "Theo's habitashery" → agy
-"store recs" / "Illisa's" / "Theo's Haberdashery"); (2) **surface on-screen entities** the 5-frame
+on the disciplined transcript + ffmpeg + vision stack. It does TWO jobs only: (1) **correct garbled
+proper nouns** in entity names — ASR's weak spot (mw "store wrecks" / "Elisa's" / "Theo's habitashery" →
+agy "store recs" / "Illisa's" / "Theo's Haberdashery"); (2) **surface on-screen entities** the 5-frame
 %-sample missed (agy reads the WHOLE video). It is NOT a source of spoken quotes, timestamps/frame
 anchors, sentiment, or comments — the stack stays **source-of-record** for all of those. agy is
 supplementary, never a replacement.
 
 ## Soft gating (NOT a hard prereq)
-Unlike `mw` / `ffmpeg` / `tiktok-cli` (hard prereqs that HALT when missing), `agy` is SOFT-probed at
-bootstrap with `agy --help`:
+Unlike the hard prereqs (`ffmpeg` + an ingest backend), which HALT when missing, `agy` is SOFT-probed
+at bootstrap with `agy --help`:
 - present → cross-check **ENABLED**.
 - absent → cross-check **DISABLED**, recorded as a coverage note ("agy entity cross-check unavailable —
-  names are mw/vision-only"); the pipeline PROCEEDS normally. This is **never a halt** — the contrast
-  with the hard prereqs.
+  names are transcript/vision-only"); the pipeline PROCEEDS normally. This is **never a halt** — the
+  contrast with the hard prereqs.
 
 ## The call (Phase-1 ingest, video-only, before media cleanup)
 Run ONCE per downloaded video mp4, **before `video.mp4` is removed** (agy needs the file present). Photo
@@ -28,7 +28,9 @@ deterministic prompt → three parseable sections:
     ## on-screen — any text visible on screen; if none write: (none)
     ## entities — bullet list of every business/place/brand name, each tagged (spoken) or (on-screen); if none write: (none)
     Do not invent or infer anything not present in the file." \
-      --model "Gemini 3.1 Pro (Low)" --add-dir <workdir> --dangerously-skip-permissions
+      --model "Gemini 3.1 Pro (Low)" --add-dir <workdir> --sandbox --dangerously-skip-permissions
+
+`--sandbox` is mandatory: agy auto-approves its tools while reading untrusted third-party media.
 
 Write the result to `<workdir>/<id>/agy.md`.
 
@@ -62,10 +64,11 @@ These layer onto the five honesty rules in [digest-extension](digest-extension.m
 
 - **R-A1 — Spelling reconciliation, by precedence.** On a same-referent spelling disagreement (matched by
   token similarity), the canonical name follows: (1) an on-screen **NAME CARD** read by vision (storefront
-  sign / Maps card — the business's own text, authoritative); (2) `agy`; (3) the `mw` transcript (weakest,
-  mishears names). So agy overrides mw for SPOKEN-only entities but does NOT override a vision-read
-  on-screen name card. The claim's quote text + timestamp/frame provenance stay exactly as the stack
-  recorded them; log the correction transparently ("canonical name per agy cross-check; mw heard 'Elisa's'").
+  sign / Maps card — the business's own text, authoritative); (2) a `captions-manual` transcript
+  (human-authored); (3) `agy`; (4) an ASR transcript — `mw`, `remote-asr`, `whisper` or `captions-auto` (weakest,
+  mishears names). So agy overrides ASR for SPOKEN-only entities but not a name card or human captions.
+  The claim's quote text + timestamp/frame provenance stay exactly as the stack recorded them; log the
+  correction transparently ("canonical name per agy cross-check; transcript heard 'Elisa's'").
 - **R-A2 — agy-only on-screen entities.** An on-screen entity agy caught but the frame-sample missed is
   ADDED as a claim sourced `agy on-screen (no frame anchor)`, at **lower confidence** than a frame-anchored
   on-screen claim; it must still corroborate downstream — never promoted on agy alone.

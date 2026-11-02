@@ -6,7 +6,9 @@ import pytest
 
 
 def _help(binary: str) -> str:
-    return subprocess.run([binary, "--help"], capture_output=True, text=True, timeout=30).stdout
+    return subprocess.run(
+        [binary, "--help"], capture_output=True, text=True, timeout=30, check=False
+    ).stdout
 
 
 @pytest.mark.skipif(shutil.which("reddit-cli") is None, reason="reddit-cli not installed")
@@ -21,28 +23,13 @@ def test_bird_has_search_subcommand():
     assert "search" in out
 
 
-def test_claude_in_chrome_capability_probe_documented():
-    """Capability smoke for the Phase 2 browser tier.
-
-    We can't pair Chrome in a headless test, so this DOCUMENTS the probe: if the `claude`
-    CLI is present and lists a chrome MCP server, assert it; otherwise skip (the tier is
-    capability-gated). Never hard-fails on environment.
-    """
-    if shutil.which("claude") is None:
-        pytest.skip("claude CLI not installed")
-    try:
-        out = subprocess.run(
-            ["claude", "mcp", "list"], capture_output=True, text=True, timeout=30
-        )
-    except (subprocess.TimeoutExpired, OSError):
-        pytest.skip("`claude mcp list` not runnable here")
-    listing = (out.stdout + out.stderr).lower()
-    if "chrome" not in listing:
-        pytest.skip("claude-in-chrome MCP not configured in this environment")
-    assert "chrome" in listing
-
-
 @pytest.mark.skipif(shutil.which("maps-cli") is None, reason="maps-cli not installed")
 def test_maps_cli_has_places_and_doctor():
     out = _help("maps-cli")
     assert "places" in out and "doctor" in out
+
+
+@pytest.mark.skipif(shutil.which("vidread") is None, reason="vidread not installed")
+def test_vidread_has_json_and_comments():
+    out = _help("vidread")
+    assert "--json" in out and "--comments" in out

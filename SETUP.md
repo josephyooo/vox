@@ -1,7 +1,7 @@
 # Vox — full setup on a fresh machine
 
 Vox is a **multi-repo system**: the `vox` orchestrator + its skills (this repo), plus sibling
-CLIs and external tools that back each source tier. This guide takes a fresh macOS laptop from
+CLIs and external tools that back each source tier. This guide takes a fresh machine from
 nothing to a working `/vox`. It is written to be followed top-to-bottom (by a human or by another
 Claude). Every tier is **capability-gated** — Vox runs with whatever is installed and degrades
 honestly when a tool is missing, so you can stop after the tiers you need.
@@ -14,7 +14,8 @@ honestly when a tool is missing, so you can stop after the tiers you need.
 
 ## 0. Prerequisites
 
-- **macOS** (the video and browser tiers are macOS-oriented: MacWhisper, Claude in Chrome).
+- **macOS or Linux.** The legacy `mw` video backend is Mac-only; `vidread` runs anywhere; the browser
+  tier needs Chrome + Claude in Chrome.
 - **Homebrew**, **Python 3.14** (the repo venvs are built on 3.14.5), **Node** (for `bird`),
   **Go** (for `gosom`). Install as needed: `brew install python go node gh`.
 - **GitHub access — the first-party repos are PRIVATE** (`vox`, `tiktok-api-cli`, `maps-cli`;
@@ -45,7 +46,7 @@ git clone https://github.com/josephyooo/tiktok-api-cli.git
 | --- | --- | --- |
 | `vox` | *(skills only, no binary)* | orchestrator |
 | `maps-cli` | `maps-cli` | Maps / places (`vox-maps`) |
-| `tiktok-api-cli` | **`tiktok-cli`** | Video (`vox-video`) |
+| `tiktok-api-cli` | **`tiktok-cli`** | Video, legacy backend; also TikTok comments/collections (`vox-video`) |
 
 ---
 
@@ -60,7 +61,8 @@ cd ~/projects/maps-cli
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 ln -sf "$PWD/.venv/bin/maps-cli" ~/.local/bin/maps-cli
 
-# tiktok-cli (Video tier) — repo is tiktok-api-cli, BINARY is tiktok-cli
+# tiktok-cli (Video, legacy backend; also TikTok comments/collections)
+# repo is tiktok-api-cli, BINARY is tiktok-cli
 cd ~/projects/tiktok-api-cli
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/python -m playwright install chromium   # browser binary; live cmds fail exit 4 without it
@@ -68,14 +70,15 @@ ln -sf "$PWD/.venv/bin/tiktok-cli" ~/.local/bin/tiktok-cli
 
 # vox dev tooling (skills are prose; the venv only runs the gate)
 cd ~/projects/vox
-python3 -m venv .venv && .venv/bin/pip install pytest ruff
+python3 -m venv .venv && .venv/bin/pip install -r requirements-lock.txt
 ```
 
 Ensure `~/.local/bin` is on your PATH. To pin the **exact** known-good dependency set instead of
 resolving latest, each Python repo ships a `requirements-lock.txt` (captured on Python 3.14.5):
 
 ```bash
-.venv/bin/pip install -r requirements-lock.txt && .venv/bin/pip install -e . --no-deps
+.venv/bin/pip install -r requirements-lock.txt && .venv/bin/pip install -e . --no-deps   # maps-cli, tiktok-api-cli
+.venv/bin/pip install -r requirements-lock.txt   # vox: nothing to install editable
 ```
 
 ---
@@ -90,15 +93,14 @@ is absent.
 | `reddit-cli` | Reddit (`vox-reddit`) | `brew install alceal/tap/reddit-cli` | third-party (alceal); tested v0.2.2 |
 | `bird` | X / Twitter (`vox-x`) | `npm install -g @steipete/bird` | needs Node; tested v0.8.0 |
 | `ffmpeg` | Video (`vox-video`) | `brew install ffmpeg` | frame extraction |
-| `mw` (MacWhisper) | Video (`vox-video`) | install **MacWhisper** (goodsnooze) → provides `mw` at `/usr/local/bin/mw` | **Pro license** + the **parakeet-v3** model the tier uses |
+| `mw` (MacWhisper) | Video (legacy Mac backend) | install **MacWhisper** (goodsnooze) → provides `mw` at `/usr/local/bin/mw` | **Pro license** + the **parakeet-v3** model the tier uses |
+| `vidread` | Video (`vox-video`, preferred backend) | sibling repo `vidread` (no published remote yet): `conda env create -f environment.yml && conda activate vidread && pip install -e .`, then symlink `vidread` onto PATH | needs `ffmpeg` + `yt-dlp`; TikTok + YouTube |
 | `gosom` | Maps (`vox-maps`, via `maps-cli`) | `brew install go && go install github.com/gosom/google-maps-scraper@latest` → `~/go/bin/` | first lookup downloads playwright Chromium |
-| `agy` *(optional)* | Video soft cross-check | **user-supplied** — a native binary; no in-repo source | OPTIONAL; only `vox-video`; soft-gated (records "agy unavailable" and proceeds if absent). Needs Gemini access. |
+| `agy` *(optional)* | Video soft cross-check | `curl -fsSL https://antigravity.google/cli/install.sh \| bash` (Google Antigravity CLI) → `~/.local/bin/agy` | OPTIONAL; only `vox-video`; soft-gated (records "agy unavailable" and proceeds if absent). Needs Gemini access. |
 
 Notes:
-- **`agy`** is the one tool with no reproducible source in this system. On the source machine it is
-  a ~140 MB native binary at `/opt/homebrew/bin/agy`; it is *not* a Homebrew formula and is not
-  checked into any repo. It is **optional** — it only sharpens `vox-video` entity spelling and is
-  non-halting when missing. Supply your own `agy` build (Gemini-backed) if you want the cross-check.
+- **`agy`** is optional; it only sharpens `vox-video` entity spelling and is non-halting when
+  missing or not signed in.
 - **Pinning external versions:** the skills call specific sub-commands/flags. If a newer `gosom` /
   `bird` / `mw` changes its surface and a tier breaks, pin to the tested version above (e.g.
   `go install github.com/gosom/google-maps-scraper@<commit>` instead of `@latest`).
@@ -113,17 +115,24 @@ and skip cleanly when absent.
 - **`claude-in-chrome`** (browser/logistics tier, `vox-browser`) — provided by the **Claude in
   Chrome** browser extension + its MCP, driving your real Chrome. Set it up per Anthropic's Claude
   in Chrome instructions; the first `vox-browser` run pairs a browser. Without it, the browser tier
-  is unavailable (Vox halts only when a place/logistics query genuinely needs it *and* `gosom` is
-  also down — otherwise it just proceeds).
-- **`firecrawl`** (optional anti-bot rung 5 for `vox-web`) — register user-scope and supply a key:
+  is unavailable (Vox halts only when a logistics query needs it, or a place query needs it *and*
+  `gosom` is also down — otherwise it just proceeds).
+- **`firecrawl`** (optional, metered last-resort anti-bot rung 6 for `vox-web`) — pinned install + a launcher that loads
+  the key from a file:
 
   ```bash
-  export FIRECRAWL_API_KEY=<your-key>     # free tier, no credit card; keep it in your shell rc
-  claude mcp add -s user firecrawl -e 'FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}' -- npx -y firecrawl-mcp
+  npm i -g firecrawl-mcp@3.22.4   # pinned; never `npx -y` (floats the version)
+  mkdir -p ~/.config/vox
+  (umask 077; echo 'FIRECRAWL_API_KEY=<your-key>' > ~/.config/vox/firecrawl.env)   # 0600
+  # launcher bakes in the absolute binary path: a service PATH may lack the npm bin
+  printf '#!/usr/bin/env bash\nset -a; . ~/.config/vox/firecrawl.env; set +a\nexec %s\n' \
+    "$(command -v firecrawl-mcp)" > ~/.local/bin/firecrawl-mcp-launch
+  chmod 700 ~/.local/bin/firecrawl-mcp-launch
+  claude mcp add -s user firecrawl -- ~/.local/bin/firecrawl-mcp-launch
   ```
 
-  The config stores only the `${FIRECRAWL_API_KEY}` *reference*, never the literal key. Restart
-  Claude Code from a shell where the key is exported. Absent → `vox-web` skips the rung; never a halt.
+  Firecrawl is metered and may be billed to your card; keep auto-recharge off. `vox-web` uses it only
+  as a capped last-resort scrape. Absent → `vox-web` skips the rung; never a halt.
 
 ---
 
@@ -150,9 +159,10 @@ installed.
 - [ ] **X / `bird`** → `bird check`; follow its auth flow if it reports unauthenticated.
 - [ ] **Reddit** → run any `reddit-cli` command once and complete its auth if prompted.
 - [ ] **MacWhisper (`mw`)** → activate the Pro license in the app and download the **parakeet-v3** model.
-- [ ] **`agy`** *(optional)* → ensure your Gemini access is configured for the binary.
+- [ ] **`agy`** *(optional)* → run `agy` once with no args to complete Google sign-in.
 - [ ] **Chrome pairing** for `claude-in-chrome` → completed on first `vox-browser` run.
-- [ ] **Firecrawl** *(optional)* → export `FIRECRAWL_API_KEY` + the `claude mcp add` in §4.
+- [ ] **Firecrawl** *(optional)* → key in `~/.config/vox/firecrawl.env` (0600) + the launcher
+  registration in §4.
 
 ---
 
@@ -165,7 +175,8 @@ maps-cli doctor                 # gosom binary + chromium            (exit 0)
 tiktok-cli doctor               # TikTokApi + chromium + ms_token    (exit 0)
 bird check                      # X auth OK
 reddit-cli --help               # present
-which agy mw ffmpeg google-maps-scraper
+vidread --help                  # video ingest backend present
+which vidread yt-dlp agy mw ffmpeg google-maps-scraper
 
 # vox dev gate (from ~/projects/vox):
 .venv/bin/python tools/validate_skills.py skills   # prints [ok] per skill
@@ -187,4 +198,4 @@ Then, in Claude Code: `/vox best ramen near Union Square` (a places query exerci
 | X | `vox-x` | `bird` | for the X tier |
 | Maps / places | `vox-maps` | `maps-cli` → `gosom` | for the places tier (or fall back to browser) |
 | Browser / logistics | `vox-browser` | `claude-in-chrome` MCP (real Chrome) | for logistics + place-data fallback |
-| Video | `vox-video` | `tiktok-cli` + `mw` + `ffmpeg` (+ optional `agy`) | all three hard-required for the video tier |
+| Video | `vox-video` | `ffmpeg` + `vidread` (or legacy `tiktok-cli` + `mw`) (+ optional `agy`) | ffmpeg + one ingest backend |

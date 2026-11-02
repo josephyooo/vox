@@ -11,8 +11,8 @@ subscription (no API).
 ```
 The web tier (`WebSearch`/`WebFetch`) is built in. The other tiers are **capability-gated** —
 each needs its CLI/tool on PATH: Reddit→`reddit-cli`, X→`bird`, Maps→`maps-cli`(+`gosom`),
-Video→`tiktok-cli`+`mw`+`ffmpeg`, browser/logistics→the `claude-in-chrome` MCP. Vox runs with
-whatever is present and degrades honestly.
+Video→`ffmpeg` + `vidread` (or legacy `mw`+`tiktok-cli`), browser/logistics→the `claude-in-chrome`
+MCP. Vox runs with whatever is present and degrades honestly.
 
 **Setting up on a fresh machine?** This is a multi-repo system (sibling CLIs + external tools).
 Follow **[SETUP.md](SETUP.md)** end-to-end — it covers GitHub access (the repos are private),
@@ -24,7 +24,7 @@ In Claude Code: `/vox best running shoes for flat feet under $150`
 ## How it works
 A `vox` orchestrator skill probes sources, proposes a rubric, fans out one subagent per relevant
 source — `vox-reddit`, `vox-x`, `vox-web`, plus the `vox-maps` (places), `vox-browser`
-(logistics/place-data fallback), and `vox-video` (TikTok collections) tiers when the query needs
+(logistics/place-data fallback), and `vox-video` (TikTok/YouTube videos) tiers when the query needs
 them — corroborates across sources (2+ to promote), resolves or discloses conflicts, and renders
 one of two output skeletons (ranked finalists, or a no-finalist sentiment read) with per-figure
 confidence. See `docs/superpowers/specs/2026-06-07-vox-design.md` and the mined `docs/vox-recipe.md`.
@@ -38,6 +38,7 @@ confidence. See `docs/superpowers/specs/2026-06-07-vox-design.md` and the mined 
 
 ## Roadmap
 Shipped since v1: the browser tier (`vox-browser`, Maps/logistics via Claude in Chrome), the
-gosom-backed places tier (`vox-maps`), the TikTok collection analyzer (`vox-video`, with an
-optional `agy`/Gemini cross-check), and Firecrawl as an anti-bot rung in `vox-web`. Deferred:
-Instagram video ingest, a `vox "..."` shell wrapper, and private/own-collection TikTok access.
+gosom-backed places tier (`vox-maps`), the TikTok/YouTube video analyzer (`vox-video`, with an
+optional `agy`/Gemini cross-check), and Firecrawl as a capped, metered last-resort scrape rung in
+`vox-web`. Deferred: Instagram video ingest, a `vox "..."` shell wrapper, and private/own-collection
+TikTok access.

@@ -1,8 +1,8 @@
 # TikTok access adapter (tiktok-cli)
 
-All TikTok access goes through `tiktok-cli` (read-only, session-native via ms_token — free, not a paid
-API). This skill touches TikTok no other way. An Instagram adapter would replace THIS file's commands
-while leaving the ingest/extract/return stages unchanged.
+`tiktok-cli` is the legacy TikTok backend (read-only, session-native via ms_token) and the ONLY route to
+TikTok comments; `vidread`/`yt-dlp` also reach TikTok. An Instagram adapter would replace THIS file's
+commands while leaving the ingest/extract/return stages unchanged.
 
 ## Enumerate the input → video URL list
 - **Collection URL** (`https://www.tiktok.com/@user/collection/Name-<id>`):
